@@ -1,0 +1,13 @@
+{
+  "risk_domain_version": "V1",
+  "invariants": "18/18",
+  "mutations": "11/11",
+  "integration_tests": "19/19",
+  "risk_tests": "121/121",
+  "global_regression": "GREEN",
+  "status": "FROZEN",
+  "frozen_at": "2026-09-22",
+  "sha256": "3dea7de9a3c0b226c1774828b352f833b6ad75f0b0badf8be78a3e9d9f838d85",
+  "files": 29,
+  "amendments": 0
+}

@@ -1,0 +1,75 @@
+{
+ "server": "PostgreSQL 16.2 on x86_64-pc-mingw64",
+ "experiments": [
+  {
+   "id": "PG-01",
+   "title": "Une clé étrangère prend `FOR KEY SHARE` sur la ligne référencée : qui bloque l'insertion d'un enfant ?",
+   "expected": "seul `FOR UPDATE` bloque ; `FOR NO KEY UPDATE`, `FOR SHARE` et `FOR KEY SHARE` ne bloquent pas",
+   "observed": "FOR UPDATE : bloque ; FOR NO KEY UPDATE : ne bloque pas ; FOR SHARE : ne bloque pas ; FOR KEY SHARE : ne bloque pas",
+   "ok": true
+  },
+  {
+   "id": "PG-02",
+   "title": "Quel verrou prend un `UPDATE` selon la colonne modifiée ? (une modification d'état ne doit pas bloquer les insertions qui référencent la ligne)",
+   "expected": "colonne ordinaire : ne bloque pas ; les autres cas sont à MESURER (ils décident du mode de verrou réellement pris par les changements d'état)",
+   "observed": "colonne ordinaire (`name`) : ne bloque pas ; colonne du prédicat d'un index unique partiel (`status`) : ne bloque pas ; colonne clé d'un index unique partiel (`dedup_key`) : ne bloque pas",
+   "ok": true
+  },
+  {
+   "id": "PG-03",
+   "title": "Conflits entre modes de verrou de ligne (base de TD27)",
+   "expected": "deux `NO KEY UPDATE` et `SHARE` / `NO KEY UPDATE` conflictuent ; `KEY SHARE` / `NO KEY UPDATE` sont compatibles ; `UPDATE` / `KEY SHARE` conflictuent",
+   "observed": "FOR NO KEY UPDATE puis FOR NO KEY UPDATE : conflit ; FOR SHARE puis FOR NO KEY UPDATE : conflit ; FOR KEY SHARE puis FOR NO KEY UPDATE : compatible ; FOR UPDATE puis FOR KEY SHARE : conflit",
+   "ok": true
+  },
+  {
+   "id": "PG-04",
+   "title": "Ordre croisé et ordre commun sur deux lignes",
+   "expected": "ordre croisé : un interblocage détecté (`40P01`) ; même ordre : aucun",
+   "observed": "ordre croisé : ['deadlock', 'ok'] ; même ordre : ['ok', 'ok']",
+   "ok": true
+  },
+  {
+   "id": "PG-05",
+   "title": "Verrou consultatif pris en PREMIÈRE instruction d'une transaction `REPEATABLE READ` (TD29) : quand l'instantané est-il pris ?",
+   "expected": "à la demande du verrou, avant l'attente : après l'attente, la transaction ne voit PAS ce que le détenteur précédent a validé pendant ce temps ; en `READ COMMITTED`, elle le voit",
+   "observed": "`REPEATABLE READ` : 0 ligne(s) visible(s) ; `READ COMMITTED` : 1",
+   "ok": true
+  },
+  {
+   "id": "PG-06",
+   "title": "`UPDATE … WHERE état = ancien` : deux travailleurs réclament la même action (H4)",
+   "expected": "le premier obtient 1 ligne ; le second attend puis obtient 0 ligne",
+   "observed": "premier : 1 ligne ; second : 0 ligne",
+   "ok": true
+  },
+  {
+   "id": "PG-07",
+   "title": "Un `INSERT` sur une clé unique déjà insérée par une transaction non validée (l'`INSERT` est une acquisition, mode `I`)",
+   "expected": "le second attend la première ; après validation : violation d'unicité (traduite en `REPLAY`)",
+   "observed": "attente : oui ; après validation : violation d'unicité",
+   "ok": true
+  },
+  {
+   "id": "PG-08",
+   "title": "Réclamation concurrente par `FOR UPDATE SKIP LOCKED` (relais, `ExecutionWorker`)",
+   "expected": "deux travailleurs obtiennent deux lignes différentes",
+   "observed": "A : 1 ; B : 2",
+   "ok": true
+  },
+  {
+   "id": "PG-09",
+   "title": "RLS échoue fermé et le réglage `set_config(..., true)` est local à la transaction (TD17, TD26)",
+   "expected": "sans organisation posée : 0 ligne ; avec : 1 ligne ; après COMMIT le réglage est vide et 0 ligne à nouveau (compatible pooler en mode transaction)",
+   "observed": "sans réglage : 0 ; avec : 1 ; après COMMIT : réglage « vide », 0 ligne(s)",
+   "ok": true
+  },
+  {
+   "id": "PG-10",
+   "title": "Les vérifications de clé étrangère ne passent pas par RLS (TD17 : les FK composites gardent l'intégrité même si RLS masque le parent)",
+   "expected": "le parent est invisible (0 ligne) mais l'insertion d'un enfant valide est acceptée",
+   "observed": "parent visible : 0 ligne(s) ; insertion de l'enfant : insertion acceptée",
+   "ok": true
+  }
+ ]
+}

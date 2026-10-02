@@ -1,0 +1,34 @@
+{
+ "pass": "B",
+ "snapshot_before": {
+  "cpu_load_pct": "17",
+  "ram_libre_mo": "440",
+  "processus_python": "1"
+ },
+ "suite": {
+  "wall": 423.4189352999674,
+  "returncode": 0,
+  "stderr_tail": ""
+ },
+ "postgres": {
+  "wall": 93.11148980003782,
+  "returncode": 0,
+  "stderr_tail": ""
+ },
+ "gate": {
+  "wall": 341.31097730004694,
+  "returncode": 0,
+  "stderr_tail": ""
+ },
+ "wall": 857.846435000014,
+ "wall_clock": 857.8460187911987,
+ "start_utc": "2026-09-20T20:30:54.265292",
+ "end_utc": "2026-09-20T20:45:12.111311",
+ "sleep_overlap_s": 0.0,
+ "sleep_windows": [],
+ "snapshot_after": {
+  "cpu_load_pct": "28",
+  "ram_libre_mo": "368",
+  "processus_python": "1"
+ }
+}

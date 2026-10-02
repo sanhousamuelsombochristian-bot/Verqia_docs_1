@@ -1,0 +1,1827 @@
+{
+ "business_date": [
+  {
+   "expect": "2026-09-30",
+   "id": "F-BD00",
+   "input": {
+    "instant": "2026-09-29T23:30:00+00:00",
+    "tz": "Pacific/Auckland"
+   }
+  },
+  {
+   "expect": "2026-09-30",
+   "id": "F-BD01",
+   "input": {
+    "instant": "2026-10-01T05:00:00+00:00",
+    "tz": "America/Los_Angeles"
+   }
+  },
+  {
+   "expect": "2026-03-29",
+   "id": "F-BD02",
+   "input": {
+    "instant": "2026-03-28T23:30:00+00:00",
+    "tz": "Europe/Paris"
+   }
+  },
+  {
+   "expect": "2026-03-29",
+   "id": "F-BD03",
+   "input": {
+    "instant": "2026-03-29T21:59:00+00:00",
+    "tz": "Europe/Paris"
+   }
+  },
+  {
+   "expect": "2026-03-30",
+   "id": "F-BD04",
+   "input": {
+    "instant": "2026-03-29T22:30:00+00:00",
+    "tz": "Europe/Paris"
+   }
+  },
+  {
+   "expect": "2026-09-30",
+   "id": "F-BD05",
+   "input": {
+    "instant": "2026-09-30T09:00:00+00:00",
+    "tz": "UTC"
+   }
+  }
+ ],
+ "checks": [
+  {
+   "expect": "INVALID_TRANSITION",
+   "id": "F-CK00",
+   "rule": "issue"
+  },
+  {
+   "expect": "INVOICE_EMPTY",
+   "id": "F-CK01",
+   "rule": "issue"
+  },
+  {
+   "expect": "INVOICE_TOTAL_MUST_BE_POSITIVE",
+   "id": "F-CK02",
+   "rule": "issue"
+  },
+  {
+   "expect": "CUSTOMER_INACTIVE",
+   "id": "F-CK03",
+   "rule": "issue"
+  },
+  {
+   "expect": "CUSTOMER_ARCHIVED",
+   "id": "F-CK04",
+   "rule": "issue"
+  },
+  {
+   "expect": "ORG_NOT_ACTIVE",
+   "id": "F-CK05",
+   "rule": "issue"
+  },
+  {
+   "expect": null,
+   "id": "F-CK06",
+   "rule": "issue"
+  },
+  {
+   "expect": "INVALID_TRANSITION",
+   "id": "F-CK07",
+   "rule": "cancel"
+  },
+  {
+   "expect": "INVALID_TRANSITION",
+   "id": "F-CK08",
+   "rule": "void"
+  },
+  {
+   "expect": "INVOICE_HAS_PAYMENTS",
+   "id": "F-CK09",
+   "rule": "void"
+  },
+  {
+   "expect": "INVOICE_HAS_OPEN_DISPUTE",
+   "id": "F-CK10",
+   "rule": "void"
+  },
+  {
+   "expect": null,
+   "id": "F-CK11",
+   "rule": "void"
+  },
+  {
+   "expect": "DISPUTE_INVOICE_NOT_DISPUTABLE",
+   "id": "F-CK12",
+   "rule": "open_dispute"
+  },
+  {
+   "expect": "DISPUTE_ALREADY_OPEN",
+   "id": "F-CK13",
+   "rule": "open_dispute"
+  },
+  {
+   "expect": "DISPUTE_REASON_REQUIRED",
+   "id": "F-CK14",
+   "rule": "open_dispute"
+  },
+  {
+   "expect": "DISPUTE_AMOUNT_EXCEEDS_TOTAL",
+   "id": "F-CK15",
+   "rule": "open_dispute"
+  },
+  {
+   "expect": null,
+   "id": "F-CK16",
+   "rule": "open_dispute"
+  },
+  {
+   "expect": "CUSTOMER_ARCHIVED",
+   "id": "F-CK17",
+   "rule": "create_payment"
+  },
+  {
+   "expect": null,
+   "id": "F-CK18",
+   "rule": "create_payment"
+  },
+  {
+   "expect": "PAYMENT_AMOUNT_INVALID",
+   "id": "F-CK19",
+   "rule": "create_payment"
+  },
+  {
+   "expect": "PAYMENT_CURRENCY_MISMATCH",
+   "id": "F-CK20",
+   "rule": "create_payment"
+  },
+  {
+   "expect": "PAYMENT_DATE_IN_FUTURE",
+   "id": "F-CK21",
+   "rule": "create_payment"
+  },
+  {
+   "expect": "PAYMENT_DATE_IN_FUTURE",
+   "id": "F-CK22",
+   "rule": "create_payment"
+  },
+  {
+   "expect": "PAYMENT_DUPLICATE_REFERENCE",
+   "id": "F-CK23",
+   "rule": "create_payment"
+  },
+  {
+   "expect": "ORG_NOT_ACTIVE",
+   "id": "F-CK24",
+   "rule": "allocate"
+  },
+  {
+   "expect": "ALLOCATION_PAYMENT_REVERSED",
+   "id": "F-CK25",
+   "rule": "allocate"
+  },
+  {
+   "expect": "ALLOCATION_INVOICE_NOT_PAYABLE",
+   "id": "F-CK26",
+   "rule": "allocate"
+  },
+  {
+   "expect": "ALLOCATION_CUSTOMER_MISMATCH",
+   "id": "F-CK27",
+   "rule": "allocate"
+  },
+  {
+   "expect": "ALLOCATION_CURRENCY_MISMATCH",
+   "id": "F-CK28",
+   "rule": "allocate"
+  },
+  {
+   "expect": "ALLOCATION_EXCEEDS_INVOICE_OUTSTANDING",
+   "id": "F-CK29",
+   "rule": "allocate"
+  },
+  {
+   "expect": "ALLOCATION_EXCEEDS_INVOICE_OUTSTANDING",
+   "id": "F-CK30",
+   "rule": "allocate"
+  },
+  {
+   "expect": "ALLOCATION_EXCEEDS_PAYMENT_AVAILABLE",
+   "id": "F-CK31",
+   "rule": "allocate"
+  },
+  {
+   "expect": null,
+   "id": "F-CK32",
+   "rule": "allocate"
+  },
+  {
+   "expect": "ALLOCATION_INVOICE_NOT_PAYABLE",
+   "id": "F-CK33",
+   "rule": "allocate"
+  },
+  {
+   "expect": "REVERSAL_EXCEEDS_ORIGINAL",
+   "id": "F-CK34",
+   "rule": "reverse_allocation"
+  },
+  {
+   "expect": null,
+   "id": "F-CK35",
+   "rule": "reverse_allocation"
+  },
+  {
+   "expect": "REVERSAL_EXCEEDS_ORIGINAL",
+   "id": "F-CK36",
+   "rule": "reverse_allocation"
+  },
+  {
+   "expect": "REVERSAL_REASON_REQUIRED",
+   "id": "F-CK37",
+   "rule": "reverse_allocation"
+  },
+  {
+   "expect": "PAYMENT_ALREADY_REVERSED",
+   "id": "F-CK38",
+   "rule": "reverse_payment"
+  },
+  {
+   "expect": "PAYMENT_REVERSAL_REASON_REQUIRED",
+   "id": "F-CK39",
+   "rule": "reverse_payment"
+  },
+  {
+   "expect": "ORG_NOT_ACTIVE",
+   "id": "F-CK40",
+   "rule": "reverse_payment"
+  },
+  {
+   "expect": null,
+   "id": "F-CK41",
+   "rule": "reverse_payment"
+  }
+ ],
+ "collectible": [
+  {
+   "expect": {
+    "collectible": 6501,
+    "disputed_part": 0
+   },
+   "id": "F-CO00",
+   "input": {
+    "dispute": null,
+    "outstanding": 6501
+   }
+  },
+  {
+   "expect": {
+    "collectible": 0,
+    "disputed_part": 6501
+   },
+   "id": "F-CO01",
+   "input": {
+    "dispute": {
+     "amount": null
+    },
+    "outstanding": 6501
+   }
+  },
+  {
+   "expect": {
+    "collectible": 2501,
+    "disputed_part": 4000
+   },
+   "id": "F-CO02",
+   "input": {
+    "dispute": {
+     "amount": 4000
+    },
+    "outstanding": 6501
+   }
+  },
+  {
+   "expect": {
+    "collectible": 0,
+    "disputed_part": 501
+   },
+   "id": "F-CO03",
+   "input": {
+    "dispute": {
+     "amount": 4000
+    },
+    "outstanding": 501
+   }
+  },
+  {
+   "expect": {
+    "collectible": 0,
+    "disputed_part": 6501
+   },
+   "id": "F-CO04",
+   "input": {
+    "dispute": {
+     "amount": 6501
+    },
+    "outstanding": 6501
+   }
+  },
+  {
+   "expect": {
+    "collectible": 0,
+    "disputed_part": 0
+   },
+   "id": "F-CO05",
+   "input": {
+    "dispute": {
+     "amount": null
+    },
+    "outstanding": 0
+   }
+  }
+ ],
+ "line_total": [
+  {
+   "expect": 10000,
+   "id": "F-LT00",
+   "input": {
+    "quantity_e4": 20000,
+    "unit_price_minor": 5000
+   }
+  },
+  {
+   "expect": 1501,
+   "id": "F-LT01",
+   "input": {
+    "quantity_e4": 5000,
+    "unit_price_minor": 3001
+   }
+  },
+  {
+   "expect": 0,
+   "id": "F-LT02",
+   "input": {
+    "quantity_e4": 1,
+    "unit_price_minor": 4999
+   }
+  },
+  {
+   "expect": 1,
+   "id": "F-LT03",
+   "input": {
+    "quantity_e4": 1,
+    "unit_price_minor": 5000
+   }
+  },
+  {
+   "expect": 7,
+   "id": "F-LT04",
+   "input": {
+    "quantity_e4": 10000,
+    "unit_price_minor": 7
+   }
+  },
+  {
+   "expect": 1,
+   "id": "F-LT05",
+   "input": {
+    "quantity_e4": 3,
+    "unit_price_minor": 3333
+   }
+  },
+  {
+   "expect": 1,
+   "id": "F-LT06",
+   "input": {
+    "quantity_e4": 3,
+    "unit_price_minor": 3334
+   }
+  },
+  {
+   "expect": 1,
+   "id": "F-LT07",
+   "input": {
+    "quantity_e4": 5,
+    "unit_price_minor": 1000
+   }
+  },
+  {
+   "expect": 0,
+   "id": "F-LT08",
+   "input": {
+    "quantity_e4": 4,
+    "unit_price_minor": 1000
+   }
+  }
+ ],
+ "position": [
+  {
+   "expect": "NOT_YET",
+   "id": "F-PO00",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 0,
+    "today": "2026-07-01"
+   }
+  },
+  {
+   "expect": "NOT_YET",
+   "id": "F-PO01",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 0,
+    "today": "2026-07-02"
+   }
+  },
+  {
+   "expect": "NOT_YET",
+   "id": "F-PO02",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 0,
+    "today": "2026-09-22"
+   }
+  },
+  {
+   "expect": "NOT_YET",
+   "id": "F-PO03",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 0,
+    "today": "2026-09-23"
+   }
+  },
+  {
+   "expect": "NOT_YET",
+   "id": "F-PO04",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 0,
+    "today": "2026-09-28"
+   }
+  },
+  {
+   "expect": "NOT_YET",
+   "id": "F-PO05",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 0,
+    "today": "2026-09-29"
+   }
+  },
+  {
+   "expect": "DUE",
+   "id": "F-PO06",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 0,
+    "today": "2026-09-30"
+   }
+  },
+  {
+   "expect": "OVERDUE",
+   "id": "F-PO07",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 0,
+    "today": "2026-10-01"
+   }
+  },
+  {
+   "expect": "OVERDUE",
+   "id": "F-PO08",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 0,
+    "today": "2026-11-15"
+   }
+  },
+  {
+   "expect": "NOT_YET",
+   "id": "F-PO09",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 1,
+    "today": "2026-07-01"
+   }
+  },
+  {
+   "expect": "NOT_YET",
+   "id": "F-PO10",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 1,
+    "today": "2026-07-02"
+   }
+  },
+  {
+   "expect": "NOT_YET",
+   "id": "F-PO11",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 1,
+    "today": "2026-09-22"
+   }
+  },
+  {
+   "expect": "NOT_YET",
+   "id": "F-PO12",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 1,
+    "today": "2026-09-23"
+   }
+  },
+  {
+   "expect": "NOT_YET",
+   "id": "F-PO13",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 1,
+    "today": "2026-09-28"
+   }
+  },
+  {
+   "expect": "DUE_SOON",
+   "id": "F-PO14",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 1,
+    "today": "2026-09-29"
+   }
+  },
+  {
+   "expect": "DUE",
+   "id": "F-PO15",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 1,
+    "today": "2026-09-30"
+   }
+  },
+  {
+   "expect": "OVERDUE",
+   "id": "F-PO16",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 1,
+    "today": "2026-10-01"
+   }
+  },
+  {
+   "expect": "OVERDUE",
+   "id": "F-PO17",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 1,
+    "today": "2026-11-15"
+   }
+  },
+  {
+   "expect": "NOT_YET",
+   "id": "F-PO18",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "today": "2026-07-01"
+   }
+  },
+  {
+   "expect": "NOT_YET",
+   "id": "F-PO19",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "today": "2026-07-02"
+   }
+  },
+  {
+   "expect": "NOT_YET",
+   "id": "F-PO20",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "today": "2026-09-22"
+   }
+  },
+  {
+   "expect": "DUE_SOON",
+   "id": "F-PO21",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "today": "2026-09-23"
+   }
+  },
+  {
+   "expect": "DUE_SOON",
+   "id": "F-PO22",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "today": "2026-09-28"
+   }
+  },
+  {
+   "expect": "DUE_SOON",
+   "id": "F-PO23",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "today": "2026-09-29"
+   }
+  },
+  {
+   "expect": "DUE",
+   "id": "F-PO24",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "today": "2026-09-30"
+   }
+  },
+  {
+   "expect": "OVERDUE",
+   "id": "F-PO25",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "today": "2026-10-01"
+   }
+  },
+  {
+   "expect": "OVERDUE",
+   "id": "F-PO26",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "today": "2026-11-15"
+   }
+  },
+  {
+   "expect": "NOT_YET",
+   "id": "F-PO27",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 90,
+    "today": "2026-07-01"
+   }
+  },
+  {
+   "expect": "DUE_SOON",
+   "id": "F-PO28",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 90,
+    "today": "2026-07-02"
+   }
+  },
+  {
+   "expect": "DUE_SOON",
+   "id": "F-PO29",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 90,
+    "today": "2026-09-22"
+   }
+  },
+  {
+   "expect": "DUE_SOON",
+   "id": "F-PO30",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 90,
+    "today": "2026-09-23"
+   }
+  },
+  {
+   "expect": "DUE_SOON",
+   "id": "F-PO31",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 90,
+    "today": "2026-09-28"
+   }
+  },
+  {
+   "expect": "DUE_SOON",
+   "id": "F-PO32",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 90,
+    "today": "2026-09-29"
+   }
+  },
+  {
+   "expect": "DUE",
+   "id": "F-PO33",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 90,
+    "today": "2026-09-30"
+   }
+  },
+  {
+   "expect": "OVERDUE",
+   "id": "F-PO34",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 90,
+    "today": "2026-10-01"
+   }
+  },
+  {
+   "expect": "OVERDUE",
+   "id": "F-PO35",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 90,
+    "today": "2026-11-15"
+   }
+  }
+ ],
+ "reverse_payment_effects": [
+  {
+   "expect": {
+    "count": 2,
+    "per_invoice": {
+     "F1": -3000,
+     "F2": -3000
+    },
+    "reversals": [
+     [
+      "L0",
+      "F1",
+      3000
+     ],
+     [
+      "L1",
+      "F2",
+      3000
+     ]
+    ]
+   },
+   "id": "F-RP01",
+   "input": {
+    "ledger": [
+     {
+      "amount": 5000,
+      "id": "L0",
+      "invoice": "F1",
+      "payment": "P",
+      "reverses": null
+     },
+     {
+      "amount": 3000,
+      "id": "L1",
+      "invoice": "F2",
+      "payment": "P",
+      "reverses": null
+     },
+     {
+      "amount": -2000,
+      "id": "L2",
+      "invoice": "F1",
+      "payment": "P",
+      "reverses": "L0"
+     }
+    ],
+    "payment": "P"
+   }
+  },
+  {
+   "expect": {
+    "count": 2,
+    "per_invoice": {
+     "F1": -3000
+    },
+    "reversals": [
+     [
+      "L0",
+      "F1",
+      2000
+     ],
+     [
+      "L1",
+      "F1",
+      1000
+     ]
+    ]
+   },
+   "id": "F-RP02",
+   "input": {
+    "ledger": [
+     {
+      "amount": 2000,
+      "id": "L0",
+      "invoice": "F1",
+      "payment": "P",
+      "reverses": null
+     },
+     {
+      "amount": 1000,
+      "id": "L1",
+      "invoice": "F1",
+      "payment": "P",
+      "reverses": null
+     }
+    ],
+    "payment": "P"
+   }
+  },
+  {
+   "expect": {
+    "count": 0,
+    "per_invoice": {},
+    "reversals": []
+   },
+   "id": "F-RP03",
+   "input": {
+    "ledger": [],
+    "payment": "P"
+   }
+  }
+ ],
+ "settlement": [
+  {
+   "expect": "UNPAID",
+   "id": "F-ST00",
+   "input": {
+    "paid": 0,
+    "total": 100
+   }
+  },
+  {
+   "expect": "PARTIALLY_PAID",
+   "id": "F-ST01",
+   "input": {
+    "paid": 1,
+    "total": 100
+   }
+  },
+  {
+   "expect": "PARTIALLY_PAID",
+   "id": "F-ST02",
+   "input": {
+    "paid": 99,
+    "total": 100
+   }
+  },
+  {
+   "expect": "PAID",
+   "id": "F-ST03",
+   "input": {
+    "paid": 100,
+    "total": 100
+   }
+  },
+  {
+   "expect": "UNPAID",
+   "id": "F-ST04",
+   "input": {
+    "paid": 0,
+    "total": 1
+   }
+  },
+  {
+   "expect": "PAID",
+   "id": "F-ST05",
+   "input": {
+    "paid": 1,
+    "total": 1
+   }
+  }
+ ],
+ "timeline": [
+  {
+   "expect": {
+    "cycle": 0,
+    "events": [
+     [
+      "2026-09-10",
+      "INVOICE_ISSUED"
+     ]
+    ],
+    "lifecycle": "ISSUED",
+    "outcomes": [
+     "OK"
+    ],
+    "paid": 0,
+    "settled_on": null,
+    "settlement": "UNPAID"
+   },
+   "id": "F-TL01",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "issue": "2026-09-01",
+    "ops": [
+     [
+      "issue",
+      "2026-09-10"
+     ]
+    ],
+    "total": 11501
+   },
+   "title": "N2 émission dans les temps"
+  },
+  {
+   "expect": {
+    "cycle": 0,
+    "events": [
+     [
+      "2026-09-25",
+      "INVOICE_ISSUED"
+     ],
+     [
+      "2026-09-25",
+      "INVOICE_DUE_SOON"
+     ]
+    ],
+    "lifecycle": "DUE_SOON",
+    "outcomes": [
+     "OK"
+    ],
+    "paid": 0,
+    "settled_on": null,
+    "settlement": "UNPAID"
+   },
+   "id": "F-TL02",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "issue": "2026-09-01",
+    "ops": [
+     [
+      "issue",
+      "2026-09-25"
+     ]
+    ],
+    "total": 11501
+   },
+   "title": "N3 émission dans la fenêtre : un saut, deux événements"
+  },
+  {
+   "expect": {
+    "cycle": 1,
+    "events": [
+     [
+      "2026-10-05",
+      "INVOICE_ISSUED"
+     ],
+     [
+      "2026-10-05",
+      "INVOICE_OVERDUE"
+     ]
+    ],
+    "lifecycle": "OVERDUE",
+    "outcomes": [
+     "OK"
+    ],
+    "paid": 0,
+    "settled_on": null,
+    "settlement": "UNPAID"
+   },
+   "id": "F-TL03",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "issue": "2026-09-01",
+    "ops": [
+     [
+      "issue",
+      "2026-10-05"
+     ]
+    ],
+    "total": 11501
+   },
+   "title": "N4 émission en retard : cycle 1"
+  },
+  {
+   "expect": {
+    "cycle": 0,
+    "events": [
+     [
+      "2026-09-30",
+      "INVOICE_ISSUED"
+     ],
+     [
+      "2026-09-30",
+      "INVOICE_DUE"
+     ]
+    ],
+    "lifecycle": "DUE",
+    "outcomes": [
+     "OK"
+    ],
+    "paid": 0,
+    "settled_on": null,
+    "settlement": "UNPAID"
+   },
+   "id": "F-TL04",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "issue": "2026-09-01",
+    "ops": [
+     [
+      "issue",
+      "2026-09-30"
+     ]
+    ],
+    "total": 11501
+   },
+   "title": "N5 émission le jour de l’échéance"
+  },
+  {
+   "expect": {
+    "cycle": 1,
+    "events": [
+     [
+      "2026-09-10",
+      "INVOICE_ISSUED"
+     ],
+     [
+      "2026-09-23",
+      "INVOICE_DUE_SOON"
+     ],
+     [
+      "2026-09-30",
+      "INVOICE_DUE"
+     ],
+     [
+      "2026-10-01",
+      "INVOICE_OVERDUE"
+     ]
+    ],
+    "lifecycle": "OVERDUE",
+    "outcomes": [
+     "OK",
+     "SKIPPED",
+     "OK",
+     "OK",
+     "OK",
+     "SKIPPED"
+    ],
+    "paid": 0,
+    "settled_on": null,
+    "settlement": "UNPAID"
+   },
+   "id": "F-TL05",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "issue": "2026-09-01",
+    "ops": [
+     [
+      "issue",
+      "2026-09-10"
+     ],
+     [
+      "scan",
+      "2026-09-22"
+     ],
+     [
+      "scan",
+      "2026-09-23"
+     ],
+     [
+      "scan",
+      "2026-09-30"
+     ],
+     [
+      "scan",
+      "2026-10-01"
+     ],
+     [
+      "scan",
+      "2026-10-02"
+     ]
+    ],
+    "total": 11501
+   },
+   "title": "N6 N7 balayages successifs"
+  },
+  {
+   "expect": {
+    "cycle": 1,
+    "events": [
+     [
+      "2026-09-10",
+      "INVOICE_ISSUED"
+     ],
+     [
+      "2026-10-15",
+      "INVOICE_OVERDUE"
+     ]
+    ],
+    "lifecycle": "OVERDUE",
+    "outcomes": [
+     "OK",
+     "OK"
+    ],
+    "paid": 0,
+    "settled_on": null,
+    "settlement": "UNPAID"
+   },
+   "id": "F-TL06",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "issue": "2026-09-01",
+    "ops": [
+     [
+      "issue",
+      "2026-09-10"
+     ],
+     [
+      "scan",
+      "2026-10-15"
+     ]
+    ],
+    "total": 11501
+   },
+   "title": "N8 balayage manqué : saut direct à OVERDUE"
+  },
+  {
+   "expect": {
+    "cycle": 0,
+    "events": [
+     [
+      "2026-09-10",
+      "INVOICE_ISSUED"
+     ],
+     [
+      "2026-09-10",
+      "INVOICE_PARTIALLY_PAID"
+     ],
+     [
+      "2026-09-12",
+      "INVOICE_PAID"
+     ]
+    ],
+    "lifecycle": "ISSUED",
+    "outcomes": [
+     "OK",
+     "OK",
+     "OK"
+    ],
+    "paid": 11501,
+    "settled_on": "2026-09-12",
+    "settlement": "PAID"
+   },
+   "id": "F-TL07",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "issue": "2026-09-01",
+    "ops": [
+     [
+      "issue",
+      "2026-09-10"
+     ],
+     [
+      "alloc",
+      "2026-09-10",
+      "P1",
+      5000,
+      "2026-09-10"
+     ],
+     [
+      "alloc",
+      "2026-09-12",
+      "P2",
+      6501,
+      "2026-09-12"
+     ]
+    ],
+    "total": 11501
+   },
+   "title": "N12 règlement en deux temps"
+  },
+  {
+   "expect": {
+    "cycle": 0,
+    "events": [
+     [
+      "2026-09-10",
+      "INVOICE_ISSUED"
+     ],
+     [
+      "2026-09-10",
+      "INVOICE_PARTIALLY_PAID"
+     ]
+    ],
+    "lifecycle": "ISSUED",
+    "outcomes": [
+     "OK",
+     "OK",
+     "OK"
+    ],
+    "paid": 3000,
+    "settled_on": null,
+    "settlement": "PARTIALLY_PAID"
+   },
+   "id": "F-TL08",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "issue": "2026-09-01",
+    "ops": [
+     [
+      "issue",
+      "2026-09-10"
+     ],
+     [
+      "alloc",
+      "2026-09-10",
+      "P1",
+      5000,
+      "2026-09-10"
+     ],
+     [
+      "reverse",
+      "2026-09-11",
+      0,
+      2000
+     ]
+    ],
+    "total": 11501
+   },
+   "title": "N15 reversal partiel : aucun événement de facture"
+  },
+  {
+   "expect": {
+    "cycle": 1,
+    "events": [
+     [
+      "2026-09-10",
+      "INVOICE_ISSUED"
+     ],
+     [
+      "2026-09-20",
+      "INVOICE_PAID"
+     ],
+     [
+      "2026-10-06",
+      "INVOICE_SETTLEMENT_REVERTED"
+     ],
+     [
+      "2026-10-06",
+      "INVOICE_OVERDUE"
+     ]
+    ],
+    "lifecycle": "OVERDUE",
+    "outcomes": [
+     "OK",
+     "OK",
+     "SKIPPED",
+     "OK"
+    ],
+    "paid": 10000,
+    "settled_on": null,
+    "settlement": "PARTIALLY_PAID"
+   },
+   "id": "F-TL09",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "issue": "2026-09-01",
+    "ops": [
+     [
+      "issue",
+      "2026-09-10"
+     ],
+     [
+      "alloc",
+      "2026-09-20",
+      "P1",
+      11501,
+      "2026-09-20"
+     ],
+     [
+      "scan",
+      "2026-10-05"
+     ],
+     [
+      "reverse",
+      "2026-10-06",
+      0,
+      1501
+     ]
+    ],
+    "total": 11501
+   },
+   "title": "L9 gel PAID puis annulation après l’échéance : recalcul en avant, cycle +1 une fois"
+  },
+  {
+   "expect": {
+    "cycle": 2,
+    "events": [
+     [
+      "2026-10-05",
+      "INVOICE_ISSUED"
+     ],
+     [
+      "2026-10-05",
+      "INVOICE_OVERDUE"
+     ],
+     [
+      "2026-10-06",
+      "INVOICE_PAID"
+     ],
+     [
+      "2026-10-07",
+      "INVOICE_SETTLEMENT_REVERTED"
+     ]
+    ],
+    "lifecycle": "OVERDUE",
+    "outcomes": [
+     "OK",
+     "OK",
+     "OK"
+    ],
+    "paid": 10000,
+    "settled_on": null,
+    "settlement": "PARTIALLY_PAID"
+   },
+   "id": "F-TL10",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "issue": "2026-09-01",
+    "ops": [
+     [
+      "issue",
+      "2026-10-05"
+     ],
+     [
+      "alloc",
+      "2026-10-06",
+      "P1",
+      11501,
+      "2026-10-06"
+     ],
+     [
+      "reverse",
+      "2026-10-07",
+      0,
+      1501
+     ]
+    ],
+    "total": 11501
+   },
+   "title": "L10 déjà OVERDUE : cycle +1, aucun événement OVERDUE"
+  },
+  {
+   "expect": {
+    "cycle": 1,
+    "events": [
+     [
+      "2026-10-05",
+      "INVOICE_ISSUED"
+     ],
+     [
+      "2026-10-05",
+      "INVOICE_OVERDUE"
+     ],
+     [
+      "2026-10-06",
+      "INVOICE_PARTIALLY_PAID"
+     ],
+     [
+      "2026-10-07",
+      "INVOICE_SETTLEMENT_REVERTED"
+     ]
+    ],
+    "lifecycle": "OVERDUE",
+    "outcomes": [
+     "OK",
+     "OK",
+     "OK"
+    ],
+    "paid": 0,
+    "settled_on": null,
+    "settlement": "UNPAID"
+   },
+   "id": "F-TL11",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "issue": "2026-09-01",
+    "ops": [
+     [
+      "issue",
+      "2026-10-05"
+     ],
+     [
+      "alloc",
+      "2026-10-06",
+      "P1",
+      5000,
+      "2026-10-06"
+     ],
+     [
+      "reverse",
+      "2026-10-07",
+      0,
+      5000
+     ]
+    ],
+    "total": 11501
+   },
+   "title": "L11 PARTIALLY_PAID vers UNPAID : cycle inchangé"
+  },
+  {
+   "expect": {
+    "cycle": 1,
+    "events": [
+     [
+      "2026-09-10",
+      "INVOICE_ISSUED"
+     ],
+     [
+      "2026-10-15",
+      "INVOICE_OVERDUE"
+     ]
+    ],
+    "lifecycle": "OVERDUE",
+    "outcomes": [
+     "OK",
+     "OK",
+     "SKIPPED",
+     "SKIPPED"
+    ],
+    "paid": 0,
+    "settled_on": null,
+    "settlement": "UNPAID"
+   },
+   "id": "F-TL12",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "issue": "2026-09-01",
+    "ops": [
+     [
+      "issue",
+      "2026-09-10"
+     ],
+     [
+      "scan",
+      "2026-10-15"
+     ],
+     [
+      "scan",
+      "2026-09-01"
+     ],
+     [
+      "scan",
+      "2026-09-25"
+     ]
+    ],
+    "total": 11501
+   },
+   "title": "L8 horloge en retard : aucun recul"
+  },
+  {
+   "expect": {
+    "cycle": 0,
+    "events": [
+     [
+      "2026-09-10",
+      "INVOICE_ISSUED"
+     ],
+     [
+      "2026-09-30",
+      "INVOICE_DUE"
+     ]
+    ],
+    "lifecycle": "DUE",
+    "outcomes": [
+     "OK",
+     "SKIPPED",
+     "OK"
+    ],
+    "paid": 0,
+    "settled_on": null,
+    "settlement": "UNPAID"
+   },
+   "id": "F-TL13",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 0,
+    "issue": "2026-09-01",
+    "ops": [
+     [
+      "issue",
+      "2026-09-10"
+     ],
+     [
+      "scan",
+      "2026-09-29"
+     ],
+     [
+      "scan",
+      "2026-09-30"
+     ]
+    ],
+    "total": 11501
+   },
+   "title": "L1 due_soon_days = 0"
+  },
+  {
+   "expect": {
+    "cycle": 0,
+    "events": [
+     [
+      "2026-09-30",
+      "INVOICE_ISSUED"
+     ],
+     [
+      "2026-09-30",
+      "INVOICE_DUE"
+     ]
+    ],
+    "lifecycle": "DUE",
+    "outcomes": [
+     "OK"
+    ],
+    "paid": 0,
+    "settled_on": null,
+    "settlement": "UNPAID"
+   },
+   "id": "F-TL14",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "issue": "2026-09-30",
+    "ops": [
+     [
+      "issue",
+      "2026-09-30"
+     ]
+    ],
+    "total": 100
+   },
+   "title": "L3 émission le jour de l’échéance (issue = due)"
+  },
+  {
+   "expect": {
+    "cycle": 1,
+    "events": [
+     [
+      "2028-02-01",
+      "INVOICE_ISSUED"
+     ],
+     [
+      "2028-02-22",
+      "INVOICE_DUE_SOON"
+     ],
+     [
+      "2028-02-29",
+      "INVOICE_DUE"
+     ],
+     [
+      "2028-03-01",
+      "INVOICE_OVERDUE"
+     ]
+    ],
+    "lifecycle": "OVERDUE",
+    "outcomes": [
+     "OK",
+     "SKIPPED",
+     "OK",
+     "OK",
+     "OK"
+    ],
+    "paid": 0,
+    "settled_on": null,
+    "settlement": "UNPAID"
+   },
+   "id": "F-TL15",
+   "input": {
+    "due": "2028-02-29",
+    "due_soon_days": 7,
+    "issue": "2028-02-01",
+    "ops": [
+     [
+      "issue",
+      "2028-02-01"
+     ],
+     [
+      "scan",
+      "2028-02-21"
+     ],
+     [
+      "scan",
+      "2028-02-22"
+     ],
+     [
+      "scan",
+      "2028-02-29"
+     ],
+     [
+      "scan",
+      "2028-03-01"
+     ]
+    ],
+    "total": 11501
+   },
+   "title": "L7 année bissextile"
+  },
+  {
+   "expect": {
+    "cycle": 0,
+    "events": [
+     [
+      "2026-09-10",
+      "INVOICE_ISSUED"
+     ],
+     [
+      "2026-09-20",
+      "INVOICE_PARTIALLY_PAID"
+     ],
+     [
+      "2026-09-21",
+      "INVOICE_PAID"
+     ]
+    ],
+    "lifecycle": "ISSUED",
+    "outcomes": [
+     "OK",
+     "OK",
+     "OK"
+    ],
+    "paid": 11501,
+    "settled_on": "2026-09-25",
+    "settlement": "PAID"
+   },
+   "id": "F-TL16",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "issue": "2026-09-01",
+    "ops": [
+     [
+      "issue",
+      "2026-09-10"
+     ],
+     [
+      "alloc",
+      "2026-09-20",
+      "A",
+      6000,
+      "2026-09-25"
+     ],
+     [
+      "alloc",
+      "2026-09-21",
+      "B",
+      5501,
+      "2026-09-22"
+     ]
+    ],
+    "total": 11501
+   },
+   "title": "V7 ordre A puis B (dates de valeur J+5 puis J+2)"
+  },
+  {
+   "expect": {
+    "cycle": 0,
+    "events": [
+     [
+      "2026-09-10",
+      "INVOICE_ISSUED"
+     ],
+     [
+      "2026-09-20",
+      "INVOICE_PARTIALLY_PAID"
+     ],
+     [
+      "2026-09-21",
+      "INVOICE_PAID"
+     ]
+    ],
+    "lifecycle": "ISSUED",
+    "outcomes": [
+     "OK",
+     "OK",
+     "OK"
+    ],
+    "paid": 11501,
+    "settled_on": "2026-09-25",
+    "settlement": "PAID"
+   },
+   "id": "F-TL17",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "issue": "2026-09-01",
+    "ops": [
+     [
+      "issue",
+      "2026-09-10"
+     ],
+     [
+      "alloc",
+      "2026-09-20",
+      "B",
+      5501,
+      "2026-09-22"
+     ],
+     [
+      "alloc",
+      "2026-09-21",
+      "A",
+      6000,
+      "2026-09-25"
+     ]
+    ],
+    "total": 11501
+   },
+   "title": "V7 ordre B puis A"
+  },
+  {
+   "expect": {
+    "cycle": 0,
+    "events": [
+     [
+      "2026-09-10",
+      "INVOICE_ISSUED"
+     ],
+     [
+      "2026-09-20",
+      "INVOICE_PARTIALLY_PAID"
+     ],
+     [
+      "2026-09-21",
+      "INVOICE_PAID"
+     ],
+     [
+      "2026-09-26",
+      "INVOICE_SETTLEMENT_REVERTED"
+     ],
+     [
+      "2026-09-26",
+      "INVOICE_DUE_SOON"
+     ],
+     [
+      "2026-09-27",
+      "INVOICE_PAID"
+     ]
+    ],
+    "lifecycle": "DUE_SOON",
+    "outcomes": [
+     "OK",
+     "OK",
+     "OK",
+     "OK",
+     "OK"
+    ],
+    "paid": 11501,
+    "settled_on": "2026-09-27",
+    "settlement": "PAID"
+   },
+   "id": "F-TL18",
+   "input": {
+    "due": "2026-09-30",
+    "due_soon_days": 7,
+    "issue": "2026-09-01",
+    "ops": [
+     [
+      "issue",
+      "2026-09-10"
+     ],
+     [
+      "alloc",
+      "2026-09-20",
+      "A",
+      6000,
+      "2026-09-25"
+     ],
+     [
+      "alloc",
+      "2026-09-21",
+      "B",
+      5501,
+      "2026-09-22"
+     ],
+     [
+      "reverse",
+      "2026-09-26",
+      0,
+      6000
+     ],
+     [
+      "alloc",
+      "2026-09-27",
+      "C",
+      6000,
+      "2026-09-27"
+     ]
+    ],
+    "total": 11501
+   },
+   "title": "V7 reversal du paiement le plus tardif puis nouveau règlement"
+  }
+ ]
+}

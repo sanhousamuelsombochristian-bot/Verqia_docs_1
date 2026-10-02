@@ -1,0 +1,1427 @@
+{
+ "cashflow": {
+  "C1 non echue BASE": {
+   "lines": [
+    {
+     "amount": 500000,
+     "basis": "DUE_DATE_PLUS_DELAY",
+     "category": "EXPECTED",
+     "date": "2026-10-21",
+     "invoice": "I2",
+     "p_bp": 9000,
+     "weighted": 450000
+    }
+   ],
+   "reserved_minor": 0
+  },
+  "C10 non alloue couvre tout": {
+   "lines": [],
+   "reserved_minor": 300000
+  },
+  "C2 non echue OPTIMISTIC": {
+   "lines": [
+    {
+     "amount": 500000,
+     "basis": "DUE_DATE_PLUS_DELAY",
+     "category": "EXPECTED",
+     "date": "2026-10-18",
+     "invoice": "I2",
+     "p_bp": 9500,
+     "weighted": 475000
+    }
+   ],
+   "reserved_minor": 0
+  },
+  "C3 non echue PESSIMISTIC": {
+   "lines": [
+    {
+     "amount": 500000,
+     "basis": "DUE_DATE_PLUS_DELAY",
+     "category": "EXPECTED",
+     "date": "2026-10-31",
+     "invoice": "I2",
+     "p_bp": 7500,
+     "weighted": 375000
+    }
+   ],
+   "reserved_minor": 0
+  },
+  "C4 echue BASE": {
+   "lines": [
+    {
+     "amount": 500000,
+     "basis": "DUE_DATE_PLUS_DELAY",
+     "category": "PROBABLE",
+     "date": "2026-10-21",
+     "invoice": "I2",
+     "p_bp": 9000,
+     "weighted": 450000
+    }
+   ],
+   "reserved_minor": 0
+  },
+  "C5 echue OPTIMISTIC": {
+   "lines": [
+    {
+     "amount": 500000,
+     "basis": "DUE_DATE_PLUS_DELAY",
+     "category": "PROBABLE",
+     "date": "2026-10-23",
+     "invoice": "I2",
+     "p_bp": 9500,
+     "weighted": 475000
+    }
+   ],
+   "reserved_minor": 0
+  },
+  "C6 echue PESSIMISTIC": {
+   "lines": [
+    {
+     "amount": 500000,
+     "basis": "DUE_DATE_PLUS_DELAY",
+     "category": "PROBABLE",
+     "date": "2026-10-31",
+     "invoice": "I2",
+     "p_bp": 7500,
+     "weighted": 375000
+    }
+   ],
+   "reserved_minor": 0
+  },
+  "C7 promesse et litige": {
+   "lines": [
+    {
+     "amount": 200000,
+     "basis": "DISPUTED_PORTION",
+     "category": "AT_RISK",
+     "date": null,
+     "invoice": "I2",
+     "p_bp": 4500,
+     "weighted": 90000
+    },
+    {
+     "amount": 150000,
+     "basis": "PROMISE",
+     "category": "PROBABLE",
+     "date": "2026-10-25",
+     "invoice": "I2",
+     "p_bp": 6500,
+     "weighted": 97500
+    },
+    {
+     "amount": 150000,
+     "basis": "DUE_DATE_PLUS_DELAY",
+     "category": "PROBABLE",
+     "date": "2026-10-21",
+     "invoice": "I2",
+     "p_bp": 9000,
+     "weighted": 135000
+    }
+   ],
+   "reserved_minor": 0
+  },
+  "C8 66 jours de retard HIGH": {
+   "lines": [
+    {
+     "amount": 500000,
+     "basis": "OVERDUE_RISK",
+     "category": "AT_RISK",
+     "date": null,
+     "invoice": "I2",
+     "p_bp": 4125,
+     "weighted": 206250
+    }
+   ],
+   "reserved_minor": 0
+  },
+  "C9 non alloue 200 000 (FIFO)": {
+   "lines": [
+    {
+     "amount": 100000,
+     "basis": "DUE_DATE_PLUS_DELAY",
+     "category": "PROBABLE",
+     "date": "2026-10-27",
+     "invoice": "I1",
+     "p_bp": 9000,
+     "weighted": 90000
+    },
+    {
+     "amount": 500000,
+     "basis": "DUE_DATE_PLUS_DELAY",
+     "category": "PROBABLE",
+     "date": "2026-10-21",
+     "invoice": "I2",
+     "p_bp": 9000,
+     "weighted": 450000
+    }
+   ],
+   "reserved_minor": 200000
+  }
+ },
+ "priority": [
+  {
+   "caps": [],
+   "dispute_no_collectible": false,
+   "input_hash": "16026f36cd3b916178679279d3fb9ea28b1d0c31aa0c2655b8282fa4ac6f6918",
+   "inputs": [
+    1200000,
+    1000000,
+    20,
+    -20,
+    "HIGH",
+    12,
+    true
+   ],
+   "level": "CRITICAL",
+   "name": "P1",
+   "previous_level": null,
+   "promise_or_hold": false,
+   "rank_score": 81,
+   "reconciliation_pending": false,
+   "signals": []
+  },
+  {
+   "caps": [],
+   "dispute_no_collectible": false,
+   "input_hash": "bc5cc5b1e3b7e2caea1c326f7cb442599b31a2a655793c1732f67143a1e17212",
+   "inputs": [
+    50000,
+    1000000,
+    0,
+    2,
+    "LOW",
+    null,
+    false
+   ],
+   "level": "NONE",
+   "name": "P2",
+   "previous_level": null,
+   "promise_or_hold": false,
+   "rank_score": 6,
+   "reconciliation_pending": false,
+   "signals": []
+  },
+  {
+   "caps": [],
+   "dispute_no_collectible": false,
+   "input_hash": "1abd4e1f4817bd4118b14c534ca90f5274f1a9e2643193ef12d0e6fef670dd86",
+   "inputs": [
+    400000,
+    1000000,
+    5,
+    -5,
+    "MEDIUM",
+    2,
+    true
+   ],
+   "level": "WATCH",
+   "name": "P3",
+   "previous_level": null,
+   "promise_or_hold": false,
+   "rank_score": 28,
+   "reconciliation_pending": false,
+   "signals": []
+  },
+  {
+   "caps": [],
+   "dispute_no_collectible": false,
+   "input_hash": "65300287e8ebd1136c77f869fb91abaa56594af1cf471d779238d9541586f704",
+   "inputs": [
+    700000,
+    1000000,
+    40,
+    -40,
+    null,
+    40,
+    true
+   ],
+   "level": "PRIORITY",
+   "name": "P4",
+   "previous_level": null,
+   "promise_or_hold": false,
+   "rank_score": 66,
+   "reconciliation_pending": false,
+   "signals": []
+  },
+  {
+   "caps": [
+    "PROMISE_OR_HOLD"
+   ],
+   "dispute_no_collectible": false,
+   "input_hash": "93129026674f4efad0ec8337aff1e4805c8d45164855d5f2d91daf4538d8613e",
+   "inputs": [
+    1200000,
+    1000000,
+    20,
+    -20,
+    "HIGH",
+    12,
+    true
+   ],
+   "level": "WATCH",
+   "name": "P5 plafond promesse",
+   "previous_level": 4,
+   "promise_or_hold": true,
+   "rank_score": 81,
+   "reconciliation_pending": false,
+   "signals": []
+  },
+  {
+   "caps": [
+    "DISPUTED"
+   ],
+   "dispute_no_collectible": true,
+   "input_hash": "30542fa992ea8508e1720c8987be35b41509f9388a280b8d8a68266411cb0cd1",
+   "inputs": [
+    1200000,
+    1000000,
+    20,
+    -20,
+    "HIGH",
+    12,
+    true
+   ],
+   "level": "ACTION",
+   "name": "P6 plafond litige",
+   "previous_level": 4,
+   "promise_or_hold": false,
+   "rank_score": 81,
+   "reconciliation_pending": false,
+   "signals": []
+  },
+  {
+   "caps": [],
+   "dispute_no_collectible": false,
+   "input_hash": "a03b1920cd9bef321451242b5bbd87cdd5b9e84974865372ed3a8b1d3a7b82ee",
+   "inputs": [
+    1200000,
+    1000000,
+    20,
+    -20,
+    "HIGH",
+    12,
+    true
+   ],
+   "level": "CRITICAL",
+   "name": "P7 rapprochement en attente (signal seul)",
+   "previous_level": null,
+   "promise_or_hold": false,
+   "rank_score": 81,
+   "reconciliation_pending": true,
+   "signals": [
+    "RECONCILIATION_PENDING"
+   ]
+  }
+ ],
+ "reconciliation": [
+  {
+   "checks": [
+    {
+     "as_of": "2026-10-19",
+     "payments": [
+      "P1"
+     ],
+     "pending": true,
+     "pending_minor": 100000,
+     "review_due": [],
+     "stale": []
+    },
+    {
+     "as_of": "2026-10-20",
+     "payments": [
+      "P1"
+     ],
+     "pending": true,
+     "pending_minor": 100000,
+     "review_due": [
+      "P1"
+     ],
+     "stale": []
+    },
+    {
+     "as_of": "2026-10-22",
+     "payments": [
+      "P1"
+     ],
+     "pending": true,
+     "pending_minor": 100000,
+     "review_due": [
+      "P1"
+     ],
+     "stale": []
+    },
+    {
+     "as_of": "2026-10-23",
+     "payments": [],
+     "pending": false,
+     "pending_minor": 0,
+     "review_due": [],
+     "stale": [
+      "P1"
+     ]
+    }
+   ],
+   "holidays": [],
+   "invoice": {
+    "currency": "XOF",
+    "customer": "c1",
+    "id": "A",
+    "is_open": true,
+    "issue_date": "2026-10-01"
+   },
+   "name": "R1 paiement non alloué, facture candidate",
+   "payments": [
+    {
+     "allocated": 0,
+     "amount": 100000,
+     "currency": "XOF",
+     "customer": "c1",
+     "id": "P1",
+     "recorded": "2026-10-19",
+     "status": "RECEIVED",
+     "value_date": "2026-10-19"
+    }
+   ],
+   "window_last_day": {
+    "P1": "2026-10-22"
+   }
+  },
+  {
+   "checks": [
+    {
+     "as_of": "2026-10-19",
+     "payments": [],
+     "pending": false,
+     "pending_minor": 0,
+     "review_due": [],
+     "stale": []
+    }
+   ],
+   "holidays": [],
+   "invoice": {
+    "currency": "XOF",
+    "customer": "c1",
+    "id": "A",
+    "is_open": true,
+    "issue_date": "2026-10-01"
+   },
+   "name": "R2 paiement antérieur à l’émission de la facture",
+   "payments": [
+    {
+     "allocated": 0,
+     "amount": 100000,
+     "currency": "XOF",
+     "customer": "c1",
+     "id": "P1",
+     "recorded": "2026-10-19",
+     "status": "RECEIVED",
+     "value_date": "2026-09-30"
+    }
+   ],
+   "window_last_day": {
+    "P1": "2026-10-22"
+   }
+  },
+  {
+   "checks": [
+    {
+     "as_of": "2026-10-19",
+     "payments": [],
+     "pending": false,
+     "pending_minor": 0,
+     "review_due": [],
+     "stale": []
+    }
+   ],
+   "holidays": [],
+   "invoice": {
+    "currency": "XOF",
+    "customer": "c1",
+    "id": "A",
+    "is_open": true,
+    "issue_date": "2026-10-01"
+   },
+   "name": "R3 paiement entièrement alloué",
+   "payments": [
+    {
+     "allocated": 100000,
+     "amount": 100000,
+     "currency": "XOF",
+     "customer": "c1",
+     "id": "P1",
+     "recorded": "2026-10-19",
+     "status": "ALLOCATED",
+     "value_date": "2026-10-19"
+    }
+   ],
+   "window_last_day": {
+    "P1": "2026-10-22"
+   }
+  },
+  {
+   "checks": [
+    {
+     "as_of": "2026-10-19",
+     "payments": [],
+     "pending": false,
+     "pending_minor": 0,
+     "review_due": [],
+     "stale": []
+    }
+   ],
+   "holidays": [],
+   "invoice": {
+    "currency": "XOF",
+    "customer": "c1",
+    "id": "A",
+    "is_open": true,
+    "issue_date": "2026-10-01"
+   },
+   "name": "R4 paiement annulé",
+   "payments": [
+    {
+     "allocated": 0,
+     "amount": 100000,
+     "currency": "XOF",
+     "customer": "c1",
+     "id": "P1",
+     "recorded": "2026-10-19",
+     "status": "REVERSED",
+     "value_date": "2026-10-19"
+    }
+   ],
+   "window_last_day": {
+    "P1": "2026-10-22"
+   }
+  },
+  {
+   "checks": [
+    {
+     "as_of": "2026-10-19",
+     "payments": [
+      "P1"
+     ],
+     "pending": true,
+     "pending_minor": 40000,
+     "review_due": [],
+     "stale": []
+    }
+   ],
+   "holidays": [],
+   "invoice": {
+    "currency": "XOF",
+    "customer": "c1",
+    "id": "A",
+    "is_open": true,
+    "issue_date": "2026-10-01"
+   },
+   "name": "R5 allocation partielle : reliquat de 40 000",
+   "payments": [
+    {
+     "allocated": 60000,
+     "amount": 100000,
+     "currency": "XOF",
+     "customer": "c1",
+     "id": "P1",
+     "recorded": "2026-10-19",
+     "status": "PARTIALLY_ALLOCATED",
+     "value_date": "2026-10-19"
+    }
+   ],
+   "window_last_day": {
+    "P1": "2026-10-22"
+   }
+  },
+  {
+   "checks": [
+    {
+     "as_of": "2026-10-26",
+     "payments": [
+      "P1"
+     ],
+     "pending": true,
+     "pending_minor": 100000,
+     "review_due": [],
+     "stale": []
+    },
+    {
+     "as_of": "2026-10-29",
+     "payments": [
+      "P1"
+     ],
+     "pending": true,
+     "pending_minor": 100000,
+     "review_due": [
+      "P1"
+     ],
+     "stale": []
+    },
+    {
+     "as_of": "2026-10-30",
+     "payments": [],
+     "pending": false,
+     "pending_minor": 0,
+     "review_due": [],
+     "stale": [
+      "P1"
+     ]
+    }
+   ],
+   "holidays": [
+    "2026-10-26"
+   ],
+   "invoice": {
+    "currency": "XOF",
+    "customer": "c1",
+    "id": "A",
+    "is_open": true,
+    "issue_date": "2026-10-01"
+   },
+   "name": "R6 jour férié dans la fenêtre",
+   "payments": [
+    {
+     "allocated": 0,
+     "amount": 100000,
+     "currency": "XOF",
+     "customer": "c1",
+     "id": "P1",
+     "recorded": "2026-10-23",
+     "status": "RECEIVED",
+     "value_date": "2026-10-23"
+    }
+   ],
+   "window_last_day": {
+    "P1": "2026-10-29"
+   }
+  },
+  {
+   "checks": [
+    {
+     "as_of": "2026-10-20",
+     "payments": [
+      "P1",
+      "P2"
+     ],
+     "pending": true,
+     "pending_minor": 120000,
+     "review_due": [
+      "P1"
+     ],
+     "stale": []
+    },
+    {
+     "as_of": "2026-10-23",
+     "payments": [
+      "P2"
+     ],
+     "pending": true,
+     "pending_minor": 20000,
+     "review_due": [
+      "P2"
+     ],
+     "stale": [
+      "P1"
+     ]
+    },
+    {
+     "as_of": "2026-10-26",
+     "payments": [],
+     "pending": false,
+     "pending_minor": 0,
+     "review_due": [],
+     "stale": [
+      "P1",
+      "P2"
+     ]
+    }
+   ],
+   "holidays": [],
+   "invoice": {
+    "currency": "XOF",
+    "customer": "c1",
+    "id": "A",
+    "is_open": true,
+    "issue_date": "2026-10-01"
+   },
+   "name": "R7 deux paiements non alloués",
+   "payments": [
+    {
+     "allocated": 0,
+     "amount": 100000,
+     "currency": "XOF",
+     "customer": "c1",
+     "id": "P1",
+     "recorded": "2026-10-19",
+     "status": "RECEIVED",
+     "value_date": "2026-10-19"
+    },
+    {
+     "allocated": 0,
+     "amount": 20000,
+     "currency": "XOF",
+     "customer": "c1",
+     "id": "P2",
+     "recorded": "2026-10-20",
+     "status": "RECEIVED",
+     "value_date": "2026-10-20"
+    }
+   ],
+   "window_last_day": {
+    "P1": "2026-10-22",
+    "P2": "2026-10-23"
+   }
+  },
+  {
+   "checks": [
+    {
+     "as_of": "2026-10-19",
+     "payments": [],
+     "pending": false,
+     "pending_minor": 0,
+     "review_due": [],
+     "stale": []
+    }
+   ],
+   "holidays": [],
+   "invoice": {
+    "currency": "XOF",
+    "customer": "c1",
+    "id": "A",
+    "is_open": true,
+    "issue_date": "2026-10-01"
+   },
+   "name": "R8 devise différente",
+   "payments": [
+    {
+     "allocated": 0,
+     "amount": 100000,
+     "currency": "EUR",
+     "customer": "c1",
+     "id": "P1",
+     "recorded": "2026-10-19",
+     "status": "RECEIVED",
+     "value_date": "2026-10-19"
+    }
+   ],
+   "window_last_day": {
+    "P1": "2026-10-22"
+   }
+  },
+  {
+   "checks": [
+    {
+     "as_of": "2026-10-19",
+     "payments": [],
+     "pending": false,
+     "pending_minor": 0,
+     "review_due": [],
+     "stale": []
+    }
+   ],
+   "holidays": [],
+   "invoice": {
+    "currency": "XOF",
+    "customer": "c1",
+    "id": "A",
+    "is_open": false,
+    "issue_date": "2026-10-01"
+   },
+   "name": "R9 facture non ouverte",
+   "payments": [
+    {
+     "allocated": 0,
+     "amount": 100000,
+     "currency": "XOF",
+     "customer": "c1",
+     "id": "P1",
+     "recorded": "2026-10-19",
+     "status": "RECEIVED",
+     "value_date": "2026-10-19"
+    }
+   ],
+   "window_last_day": {
+    "P1": "2026-10-22"
+   }
+  },
+  {
+   "checks": [
+    {
+     "as_of": "2026-10-21",
+     "payments": [
+      "P1"
+     ],
+     "pending": true,
+     "pending_minor": 100000,
+     "review_due": [],
+     "stale": []
+    },
+    {
+     "as_of": "2026-10-26",
+     "payments": [
+      "P1"
+     ],
+     "pending": true,
+     "pending_minor": 100000,
+     "review_due": [
+      "P1"
+     ],
+     "stale": []
+    }
+   ],
+   "holidays": [],
+   "invoice": {
+    "currency": "XOF",
+    "customer": "c1",
+    "id": "A",
+    "is_open": true,
+    "issue_date": "2026-10-01"
+   },
+   "name": "R10 paiement enregistré tard (date de valeur ancienne)",
+   "payments": [
+    {
+     "allocated": 0,
+     "amount": 100000,
+     "currency": "XOF",
+     "customer": "c1",
+     "id": "P1",
+     "recorded": "2026-10-21",
+     "status": "RECEIVED",
+     "value_date": "2026-10-01"
+    }
+   ],
+   "window_last_day": {
+    "P1": "2026-10-26"
+   }
+  },
+  {
+   "barrier_lifted_at_utc": {
+    "P1": "2026-10-28T23:00:00Z"
+   },
+   "checks": [
+    {
+     "local_date": "2026-10-24",
+     "now_utc": "2026-10-23T22:30:00Z",
+     "payments": [
+      "P1"
+     ],
+     "pending": true,
+     "pending_minor": 100000,
+     "review_due": [],
+     "stale": []
+    },
+    {
+     "local_date": "2026-10-27",
+     "now_utc": "2026-10-27T21:59:59Z",
+     "payments": [
+      "P1"
+     ],
+     "pending": true,
+     "pending_minor": 100000,
+     "review_due": [
+      "P1"
+     ],
+     "stale": []
+    },
+    {
+     "local_date": "2026-10-28",
+     "now_utc": "2026-10-28T22:59:59Z",
+     "payments": [
+      "P1"
+     ],
+     "pending": true,
+     "pending_minor": 100000,
+     "review_due": [
+      "P1"
+     ],
+     "stale": []
+    },
+    {
+     "local_date": "2026-10-29",
+     "now_utc": "2026-10-28T23:00:00Z",
+     "payments": [],
+     "pending": false,
+     "pending_minor": 0,
+     "review_due": [],
+     "stale": [
+      "P1"
+     ]
+    }
+   ],
+   "holidays": [],
+   "invoice": {
+    "currency": "XOF",
+    "customer": "c1",
+    "id": "A",
+    "is_open": true,
+    "issue_date": "2026-10-01"
+   },
+   "local_recorded": {
+    "P1": "2026-10-24"
+   },
+   "name": "R11 enregistré vendredi soir UTC, samedi côté Paris",
+   "payments": [
+    {
+     "allocated": 0,
+     "amount": 100000,
+     "created_at": "2026-10-23T22:30:00Z",
+     "currency": "XOF",
+     "customer": "c1",
+     "id": "P1",
+     "recorded": "2026-10-19",
+     "status": "RECEIVED",
+     "value_date": "2026-10-23"
+    }
+   ],
+   "timezone": "Europe/Paris",
+   "window_last_day": {
+    "P1": "2026-10-28"
+   }
+  },
+  {
+   "barrier_lifted_at_utc": {
+    "P1": "2026-10-23T04:00:00Z"
+   },
+   "checks": [
+    {
+     "local_date": "2026-10-19",
+     "now_utc": "2026-10-20T02:00:00Z",
+     "payments": [
+      "P1"
+     ],
+     "pending": true,
+     "pending_minor": 100000,
+     "review_due": [],
+     "stale": []
+    },
+    {
+     "local_date": "2026-10-22",
+     "now_utc": "2026-10-23T03:59:59Z",
+     "payments": [
+      "P1"
+     ],
+     "pending": true,
+     "pending_minor": 100000,
+     "review_due": [
+      "P1"
+     ],
+     "stale": []
+    },
+    {
+     "local_date": "2026-10-23",
+     "now_utc": "2026-10-23T04:00:00Z",
+     "payments": [],
+     "pending": false,
+     "pending_minor": 0,
+     "review_due": [],
+     "stale": [
+      "P1"
+     ]
+    },
+    {
+     "local_date": "2026-10-23",
+     "now_utc": "2026-10-24T03:59:59Z",
+     "payments": [],
+     "pending": false,
+     "pending_minor": 0,
+     "review_due": [],
+     "stale": [
+      "P1"
+     ]
+    }
+   ],
+   "holidays": [],
+   "invoice": {
+    "currency": "XOF",
+    "customer": "c1",
+    "id": "A",
+    "is_open": true,
+    "issue_date": "2026-10-01"
+   },
+   "local_recorded": {
+    "P1": "2026-10-19"
+   },
+   "name": "R12 enregistré mardi UTC, lundi soir côté New York",
+   "payments": [
+    {
+     "allocated": 0,
+     "amount": 100000,
+     "created_at": "2026-10-20T02:00:00Z",
+     "currency": "XOF",
+     "customer": "c1",
+     "id": "P1",
+     "recorded": "2026-10-19",
+     "status": "RECEIVED",
+     "value_date": "2026-10-19"
+    }
+   ],
+   "timezone": "America/New_York",
+   "window_last_day": {
+    "P1": "2026-10-22"
+   }
+  },
+  {
+   "barrier_lifted_at_utc": {
+    "P1": "2026-10-22T22:00:00Z"
+   },
+   "checks": [
+    {
+     "local_date": "2026-10-22",
+     "now_utc": "2026-10-22T09:00:00Z",
+     "payments": [
+      "P1"
+     ],
+     "pending": true,
+     "pending_minor": 100000,
+     "review_due": [
+      "P1"
+     ],
+     "stale": []
+    },
+    {
+     "local_date": "2026-10-22",
+     "now_utc": "2026-10-22T21:59:59Z",
+     "payments": [
+      "P1"
+     ],
+     "pending": true,
+     "pending_minor": 100000,
+     "review_due": [
+      "P1"
+     ],
+     "stale": []
+    },
+    {
+     "local_date": "2026-10-23",
+     "now_utc": "2026-10-22T22:00:00Z",
+     "payments": [],
+     "pending": false,
+     "pending_minor": 0,
+     "review_due": [],
+     "stale": [
+      "P1"
+     ]
+    },
+    {
+     "local_date": "2026-10-23",
+     "now_utc": "2026-10-23T09:00:00Z",
+     "payments": [],
+     "pending": false,
+     "pending_minor": 0,
+     "review_due": [],
+     "stale": [
+      "P1"
+     ]
+    }
+   ],
+   "holidays": [],
+   "invoice": {
+    "currency": "XOF",
+    "customer": "c1",
+    "id": "A",
+    "is_open": true,
+    "issue_date": "2026-10-01"
+   },
+   "local_recorded": {
+    "P1": "2026-10-19"
+   },
+   "name": "R13 frontière de minuit local (Paris, heure d’été)",
+   "payments": [
+    {
+     "allocated": 0,
+     "amount": 100000,
+     "created_at": "2026-10-19T09:00:00Z",
+     "currency": "XOF",
+     "customer": "c1",
+     "id": "P1",
+     "recorded": "2026-10-19",
+     "status": "RECEIVED",
+     "value_date": "2026-10-19"
+    }
+   ],
+   "timezone": "Europe/Paris",
+   "window_last_day": {
+    "P1": "2026-10-22"
+   }
+  },
+  {
+   "barrier_lifted_at_utc": {
+    "P1": "2026-10-28T23:00:00Z"
+   },
+   "checks": [
+    {
+     "local_date": "2026-10-28",
+     "now_utc": "2026-10-28T22:00:00Z",
+     "payments": [
+      "P1"
+     ],
+     "pending": true,
+     "pending_minor": 100000,
+     "review_due": [
+      "P1"
+     ],
+     "stale": []
+    },
+    {
+     "local_date": "2026-10-28",
+     "now_utc": "2026-10-28T22:59:59Z",
+     "payments": [
+      "P1"
+     ],
+     "pending": true,
+     "pending_minor": 100000,
+     "review_due": [
+      "P1"
+     ],
+     "stale": []
+    },
+    {
+     "local_date": "2026-10-29",
+     "now_utc": "2026-10-28T23:00:00Z",
+     "payments": [],
+     "pending": false,
+     "pending_minor": 0,
+     "review_due": [],
+     "stale": [
+      "P1"
+     ]
+    }
+   ],
+   "holidays": [],
+   "invoice": {
+    "currency": "XOF",
+    "customer": "c1",
+    "id": "A",
+    "is_open": true,
+    "issue_date": "2026-10-01"
+   },
+   "local_recorded": {
+    "P1": "2026-10-23"
+   },
+   "name": "R14 changement d’heure dans la fenêtre (Paris, 25 octobre)",
+   "payments": [
+    {
+     "allocated": 0,
+     "amount": 100000,
+     "created_at": "2026-10-23T08:00:00Z",
+     "currency": "XOF",
+     "customer": "c1",
+     "id": "P1",
+     "recorded": "2026-10-19",
+     "status": "RECEIVED",
+     "value_date": "2026-10-23"
+    }
+   ],
+   "timezone": "Europe/Paris",
+   "window_last_day": {
+    "P1": "2026-10-28"
+   }
+  }
+ ],
+ "risk": [
+  {
+   "factors": {
+    "factors": [
+     {
+      "factor": "delay",
+      "max": 30,
+      "normalized_input": "pts=5",
+      "points": 5
+     },
+     {
+      "factor": "history",
+      "max": 25,
+      "normalized_input": "late=0;delay=0",
+      "points": 0
+     },
+     {
+      "factor": "broken_promises",
+      "max": 15,
+      "normalized_input": "pts=0",
+      "points": 0
+     },
+     {
+      "factor": "exposure",
+      "max": 15,
+      "normalized_input": "pts=1",
+      "points": 1
+     },
+     {
+      "factor": "reversed_payments",
+      "max": 10,
+      "normalized_input": "pts=0",
+      "points": 0
+     },
+     {
+      "factor": "trend",
+      "max": 5,
+      "normalized_input": "pts=0",
+      "points": 0
+     }
+    ],
+    "meta": {
+     "confidence": "LOW"
+    }
+   },
+   "input_hash": "f59acb3b3f97ef5796fc4262151df9b3521d5f2e07f77f105841ed8aa730726c",
+   "inputs": [
+    3,
+    0,
+    0,
+    0,
+    0,
+    100000,
+    1000000,
+    0,
+    null
+   ],
+   "level": "LOW",
+   "name": "G1",
+   "previous_level": null,
+   "score": 6
+  },
+  {
+   "factors": {
+    "factors": [
+     {
+      "factor": "delay",
+      "max": 30,
+      "normalized_input": "pts=20",
+      "points": 20
+     },
+     {
+      "factor": "history",
+      "max": 25,
+      "normalized_input": "late=11;delay=6",
+      "points": 17
+     },
+     {
+      "factor": "broken_promises",
+      "max": 15,
+      "normalized_input": "pts=5",
+      "points": 5
+     },
+     {
+      "factor": "exposure",
+      "max": 15,
+      "normalized_input": "pts=9",
+      "points": 9
+     },
+     {
+      "factor": "reversed_payments",
+      "max": 10,
+      "normalized_input": "pts=0",
+      "points": 0
+     },
+     {
+      "factor": "trend",
+      "max": 5,
+      "normalized_input": "pts=2",
+      "points": 2
+     }
+    ],
+    "meta": {
+     "confidence": "HIGH"
+    }
+   },
+   "input_hash": "ef94a205f5d22b661df497423c95925bc2aafca272049fe6208ffdecadd5af25",
+   "inputs": [
+    20,
+    8,
+    750,
+    20,
+    1,
+    600000,
+    1000000,
+    0,
+    4
+   ],
+   "level": "HIGH",
+   "name": "G2",
+   "previous_level": null,
+   "score": 53
+  },
+  {
+   "factors": {
+    "factors": [
+     {
+      "factor": "delay",
+      "max": 30,
+      "normalized_input": "pts=30",
+      "points": 30
+     },
+     {
+      "factor": "history",
+      "max": 25,
+      "normalized_input": "late=13;delay=10",
+      "points": 23
+     },
+     {
+      "factor": "broken_promises",
+      "max": 15,
+      "normalized_input": "pts=15",
+      "points": 15
+     },
+     {
+      "factor": "exposure",
+      "max": 15,
+      "normalized_input": "pts=15",
+      "points": 15
+     },
+     {
+      "factor": "reversed_payments",
+      "max": 10,
+      "normalized_input": "pts=10",
+      "points": 10
+     },
+     {
+      "factor": "trend",
+      "max": 5,
+      "normalized_input": "pts=5",
+      "points": 5
+     }
+    ],
+    "meta": {
+     "confidence": "HIGH"
+    }
+   },
+   "input_hash": "276888aab255edd21a2576b29179237cecfe9b234d4177b39186b378be383d3c",
+   "inputs": [
+    70,
+    10,
+    900,
+    40,
+    3,
+    2000000,
+    1000000,
+    2,
+    10
+   ],
+   "level": "CRITICAL",
+   "name": "G3",
+   "previous_level": null,
+   "score": 98
+  },
+  {
+   "factors": {
+    "factors": [
+     {
+      "factor": "delay",
+      "max": 30,
+      "normalized_input": "pts=0",
+      "points": 0
+     },
+     {
+      "factor": "history",
+      "max": 25,
+      "normalized_input": "late=1;delay=1",
+      "points": 2
+     },
+     {
+      "factor": "broken_promises",
+      "max": 15,
+      "normalized_input": "pts=0",
+      "points": 0
+     },
+     {
+      "factor": "exposure",
+      "max": 15,
+      "normalized_input": "pts=0",
+      "points": 0
+     },
+     {
+      "factor": "reversed_payments",
+      "max": 10,
+      "normalized_input": "pts=0",
+      "points": 0
+     },
+     {
+      "factor": "trend",
+      "max": 5,
+      "normalized_input": "pts=0",
+      "points": 0
+     }
+    ],
+    "meta": {
+     "confidence": "HIGH"
+    }
+   },
+   "input_hash": "0150790b6890b28394bdfb76c7ec77d06d0788d3e683c38101936616698ab362",
+   "inputs": [
+    0,
+    12,
+    100,
+    3,
+    0,
+    0,
+    1000000,
+    0,
+    0
+   ],
+   "level": "LOW",
+   "name": "G4",
+   "previous_level": null,
+   "score": 2
+  },
+  {
+   "factors": {
+    "factors": [
+     {
+      "factor": "delay",
+      "max": 30,
+      "normalized_input": "pts=26",
+      "points": 26
+     },
+     {
+      "factor": "history",
+      "max": 25,
+      "normalized_input": "late=0;delay=0",
+      "points": 0
+     },
+     {
+      "factor": "broken_promises",
+      "max": 15,
+      "normalized_input": "pts=0",
+      "points": 0
+     },
+     {
+      "factor": "exposure",
+      "max": 15,
+      "normalized_input": "pts=15",
+      "points": 15
+     },
+     {
+      "factor": "reversed_payments",
+      "max": 10,
+      "normalized_input": "pts=0",
+      "points": 0
+     },
+     {
+      "factor": "trend",
+      "max": 5,
+      "normalized_input": "pts=0",
+      "points": 0
+     }
+    ],
+    "meta": {
+     "confidence": "LOW"
+    }
+   },
+   "input_hash": "e1881feab6aeb404fd05371a6f48376312c6601c9f8632475da5131add6ac18a",
+   "inputs": [
+    35,
+    2,
+    1000,
+    45,
+    0,
+    1500000,
+    1000000,
+    0,
+    null
+   ],
+   "level": "MEDIUM",
+   "name": "G5",
+   "previous_level": null,
+   "score": 41
+  }
+ ]
+}

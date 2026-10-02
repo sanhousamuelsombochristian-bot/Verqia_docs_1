@@ -1,0 +1,759 @@
+{
+ "caps": [
+  {
+   "expect": {
+    "caps": [],
+    "level": "CRITICAL"
+   },
+   "id": "P-CAP-none",
+   "input": {
+    "dispute_no_collectible": false,
+    "hold": false,
+    "promise": false
+   }
+  },
+  {
+   "expect": {
+    "caps": [
+     "PROMISE_OR_HOLD"
+    ],
+    "level": "WATCH"
+   },
+   "id": "P-CAP-promise",
+   "input": {
+    "dispute_no_collectible": false,
+    "hold": false,
+    "promise": true
+   }
+  },
+  {
+   "expect": {
+    "caps": [
+     "PROMISE_OR_HOLD"
+    ],
+    "level": "WATCH"
+   },
+   "id": "P-CAP-hold",
+   "input": {
+    "dispute_no_collectible": false,
+    "hold": true,
+    "promise": false
+   }
+  },
+  {
+   "expect": {
+    "caps": [
+     "PROMISE_OR_HOLD"
+    ],
+    "level": "WATCH"
+   },
+   "id": "P-CAP-promise-and-hold",
+   "input": {
+    "dispute_no_collectible": false,
+    "hold": true,
+    "promise": true
+   }
+  },
+  {
+   "expect": {
+    "caps": [
+     "DISPUTED"
+    ],
+    "level": "ACTION"
+   },
+   "id": "P-CAP-dispute",
+   "input": {
+    "dispute_no_collectible": true,
+    "hold": false,
+    "promise": false
+   }
+  },
+  {
+   "expect": {
+    "caps": [
+     "PROMISE_OR_HOLD",
+     "DISPUTED"
+    ],
+    "level": "WATCH"
+   },
+   "id": "P-CAP-promise-and-dispute",
+   "input": {
+    "dispute_no_collectible": true,
+    "hold": false,
+    "promise": true
+   }
+  }
+ ],
+ "decision": [
+  {
+   "expect": {
+    "changed": true,
+    "eligible": true,
+    "event": null,
+    "level": "WATCH"
+   },
+   "id": "P-DC01",
+   "title": "premier calcul : élément créé, aucun PRIORITY_CHANGED"
+  },
+  {
+   "expect": {
+    "changed": true,
+    "event": null,
+    "level": "WATCH"
+   },
+   "id": "P-DC02",
+   "title": "second calcul, mêmes facts : previous_level None->réel change quand même les entrées normalisées"
+  },
+  {
+   "expect": {
+    "changed": false,
+    "event": null
+   },
+   "id": "P-DC03",
+   "title": "troisième calcul, mêmes facts, previous_level stable : régime stationnaire"
+  },
+  {
+   "expect": {
+    "changed": true,
+    "event": null,
+    "level": "WATCH",
+    "score": 29
+   },
+   "id": "P-DC04",
+   "title": "le score change (montant) mais le niveau publié reste identique : écriture sans événement"
+  },
+  {
+   "expect": {
+    "changed": true,
+    "event": null,
+    "level": "WATCH",
+    "score": 29
+   },
+   "id": "P-DC05",
+   "title": "signal de réconciliation seul : hash/reasons changent, score et niveau non"
+  },
+  {
+   "expect": {
+    "changed": true,
+    "event": {
+     "from_level": "WATCH",
+     "rank_score": 68,
+     "to_level": "PRIORITY"
+    },
+    "level": "PRIORITY"
+   },
+   "id": "P-DC06",
+   "title": "changement important : niveau publié change, PRIORITY_CHANGED émis"
+  },
+  {
+   "expect": {
+    "changed": false,
+    "eligible": false,
+    "event": null,
+    "is_closed": false,
+    "level": null,
+    "normalized_inputs": null,
+    "reasons": null,
+    "score": null
+   },
+   "id": "P-DC07",
+   "title": "facture DRAFT : aucun élément"
+  },
+  {
+   "expect": {
+    "changed": true,
+    "eligible": true,
+    "event": null,
+    "is_closed": true,
+    "level": "NONE",
+    "score": 0
+   },
+   "id": "P-DC08",
+   "title": "facture fermée, premier calcul : élément NONE/CLOSED, aucun événement"
+  }
+ ],
+ "dispute_derivation": [
+  {
+   "expect": true,
+   "id": "P-DD01",
+   "input": {
+    "collectible_minor": 0,
+    "has_open_dispute": true
+   }
+  },
+  {
+   "expect": false,
+   "id": "P-DD02",
+   "input": {
+    "collectible_minor": 500,
+    "has_open_dispute": true
+   }
+  },
+  {
+   "expect": false,
+   "id": "P-DD03",
+   "input": {
+    "collectible_minor": 0,
+    "has_open_dispute": false
+   }
+  }
+ ],
+ "eligibility": [
+  {
+   "expect": "draft",
+   "id": "P-EL-draft",
+   "input": {
+    "is_draft": true,
+    "is_open": false
+   }
+  },
+  {
+   "expect": "closed",
+   "id": "P-EL-closed",
+   "input": {
+    "is_draft": false,
+    "is_open": false
+   }
+  },
+  {
+   "expect": "active",
+   "id": "P-EL-active",
+   "input": {
+    "is_draft": false,
+    "is_open": true
+   }
+  }
+ ],
+ "formula": [
+  {
+   "expect": {
+    "caps": [],
+    "level": "CRITICAL",
+    "score": 81
+   },
+   "id": "P-SC-P1",
+   "input": {
+    "A": 1200000,
+    "C": 1000000,
+    "Dd": 20,
+    "Dj": -20,
+    "S": 12,
+    "dispute_no_collectible": false,
+    "overdue": true,
+    "previous_level": null,
+    "promise_or_hold": false,
+    "risk_level": "HIGH"
+   }
+  },
+  {
+   "expect": {
+    "caps": [],
+    "level": "NONE",
+    "score": 6
+   },
+   "id": "P-SC-P2",
+   "input": {
+    "A": 50000,
+    "C": 1000000,
+    "Dd": 0,
+    "Dj": 2,
+    "S": null,
+    "dispute_no_collectible": false,
+    "overdue": false,
+    "previous_level": null,
+    "promise_or_hold": false,
+    "risk_level": "LOW"
+   }
+  },
+  {
+   "expect": {
+    "caps": [],
+    "level": "WATCH",
+    "score": 28
+   },
+   "id": "P-SC-P3",
+   "input": {
+    "A": 400000,
+    "C": 1000000,
+    "Dd": 5,
+    "Dj": -5,
+    "S": 2,
+    "dispute_no_collectible": false,
+    "overdue": true,
+    "previous_level": null,
+    "promise_or_hold": false,
+    "risk_level": "MEDIUM"
+   }
+  },
+  {
+   "expect": {
+    "caps": [],
+    "level": "PRIORITY",
+    "score": 66
+   },
+   "id": "P-SC-P4",
+   "input": {
+    "A": 700000,
+    "C": 1000000,
+    "Dd": 40,
+    "Dj": -40,
+    "S": 40,
+    "dispute_no_collectible": false,
+    "overdue": true,
+    "previous_level": null,
+    "promise_or_hold": false,
+    "risk_level": null
+   }
+  },
+  {
+   "expect": {
+    "caps": [
+     "PROMISE_OR_HOLD"
+    ],
+    "level": "WATCH",
+    "score": 81
+   },
+   "id": "P-SC-P5",
+   "input": {
+    "A": 1200000,
+    "C": 1000000,
+    "Dd": 20,
+    "Dj": -20,
+    "S": 12,
+    "dispute_no_collectible": false,
+    "overdue": true,
+    "previous_level": "CRITICAL",
+    "promise_or_hold": true,
+    "risk_level": "HIGH"
+   }
+  },
+  {
+   "expect": {
+    "caps": [
+     "DISPUTED"
+    ],
+    "level": "ACTION",
+    "score": 81
+   },
+   "id": "P-SC-P6",
+   "input": {
+    "A": 1200000,
+    "C": 1000000,
+    "Dd": 20,
+    "Dj": -20,
+    "S": 12,
+    "dispute_no_collectible": true,
+    "overdue": true,
+    "previous_level": "CRITICAL",
+    "promise_or_hold": false,
+    "risk_level": "HIGH"
+   }
+  },
+  {
+   "expect": {
+    "caps": [],
+    "level": "CRITICAL",
+    "score": 81
+   },
+   "id": "P-SC-P7",
+   "input": {
+    "A": 1200000,
+    "C": 1000000,
+    "Dd": 20,
+    "Dj": -20,
+    "S": 12,
+    "dispute_no_collectible": false,
+    "overdue": true,
+    "previous_level": null,
+    "promise_or_hold": false,
+    "risk_level": "HIGH"
+   }
+  }
+ ],
+ "hysteresis_boundary": [
+  {
+   "expect": "PRIORITY",
+   "id": "P-HY-B01",
+   "input": {
+    "previous_level": "PRIORITY",
+    "score": 57
+   },
+   "title": "score+MARGIN == seuil : reste (57+3=60)"
+  },
+  {
+   "expect": "ACTION",
+   "id": "P-HY-B02",
+   "input": {
+    "previous_level": "PRIORITY",
+    "score": 56
+   },
+   "title": "score+MARGIN < seuil : descend (56+3=59<60)"
+  }
+ ],
+ "hysteresis_example": {
+  "expect": {
+   "changes": 2,
+   "levels": [
+    "ACTION",
+    "ACTION",
+    "ACTION",
+    "PRIORITY",
+    "PRIORITY",
+    "PRIORITY",
+    "PRIORITY",
+    "PRIORITY",
+    "ACTION",
+    "ACTION",
+    "ACTION"
+   ]
+  },
+  "id": "P-HY01",
+  "input": {
+   "scores": [
+    54,
+    56,
+    59,
+    61,
+    58,
+    57,
+    59,
+    60,
+    56,
+    55,
+    54
+   ]
+  }
+ },
+ "levels": [
+  {
+   "expect": "NONE",
+   "id": "P-LV00",
+   "input": {
+    "score": 0
+   }
+  },
+  {
+   "expect": "NONE",
+   "id": "P-LV19",
+   "input": {
+    "score": 19
+   }
+  },
+  {
+   "expect": "WATCH",
+   "id": "P-LV20",
+   "input": {
+    "score": 20
+   }
+  },
+  {
+   "expect": "WATCH",
+   "id": "P-LV39",
+   "input": {
+    "score": 39
+   }
+  },
+  {
+   "expect": "ACTION",
+   "id": "P-LV40",
+   "input": {
+    "score": 40
+   }
+  },
+  {
+   "expect": "ACTION",
+   "id": "P-LV59",
+   "input": {
+    "score": 59
+   }
+  },
+  {
+   "expect": "PRIORITY",
+   "id": "P-LV60",
+   "input": {
+    "score": 60
+   }
+  },
+  {
+   "expect": "PRIORITY",
+   "id": "P-LV79",
+   "input": {
+    "score": 79
+   }
+  },
+  {
+   "expect": "CRITICAL",
+   "id": "P-LV80",
+   "input": {
+    "score": 80
+   }
+  },
+  {
+   "expect": "CRITICAL",
+   "id": "P-LV95",
+   "input": {
+    "score": 95
+   }
+  }
+ ],
+ "points": [
+  {
+   "expect": 0,
+   "id": "P-PT-amt00",
+   "input": {
+    "A": 0,
+    "C": 1000000
+   }
+  },
+  {
+   "expect": 0,
+   "id": "P-PT-amt01",
+   "input": {
+    "A": 1,
+    "C": 1000000
+   }
+  },
+  {
+   "expect": 15,
+   "id": "P-PT-amt02",
+   "input": {
+    "A": 500000,
+    "C": 1000000
+   }
+  },
+  {
+   "expect": 29,
+   "id": "P-PT-amt03",
+   "input": {
+    "A": 999999,
+    "C": 1000000
+   }
+  },
+  {
+   "expect": 30,
+   "id": "P-PT-amt04",
+   "input": {
+    "A": 1000000,
+    "C": 1000000
+   }
+  },
+  {
+   "expect": 30,
+   "id": "P-PT-amt05",
+   "input": {
+    "A": 2000000,
+    "C": 1000000
+   }
+  },
+  {
+   "expect": 0,
+   "id": "P-PT-del00",
+   "input": {
+    "Dd": 0
+   }
+  },
+  {
+   "expect": 8,
+   "id": "P-PT-del01",
+   "input": {
+    "Dd": 1
+   }
+  },
+  {
+   "expect": 8,
+   "id": "P-PT-del02",
+   "input": {
+    "Dd": 7
+   }
+  },
+  {
+   "expect": 16,
+   "id": "P-PT-del03",
+   "input": {
+    "Dd": 8
+   }
+  },
+  {
+   "expect": 16,
+   "id": "P-PT-del04",
+   "input": {
+    "Dd": 15
+   }
+  },
+  {
+   "expect": 24,
+   "id": "P-PT-del05",
+   "input": {
+    "Dd": 16
+   }
+  },
+  {
+   "expect": 24,
+   "id": "P-PT-del06",
+   "input": {
+    "Dd": 30
+   }
+  },
+  {
+   "expect": 30,
+   "id": "P-PT-del07",
+   "input": {
+    "Dd": 31
+   }
+  },
+  {
+   "expect": 30,
+   "id": "P-PT-del08",
+   "input": {
+    "Dd": 60
+   }
+  },
+  {
+   "expect": 30,
+   "id": "P-PT-del09",
+   "input": {
+    "Dd": 61
+   }
+  },
+  {
+   "expect": 30,
+   "id": "P-PT-del10",
+   "input": {
+    "Dd": 200
+   }
+  },
+  {
+   "expect": 0,
+   "id": "P-PT-due00",
+   "input": {
+    "Dj": -1
+   }
+  },
+  {
+   "expect": 5,
+   "id": "P-PT-due01",
+   "input": {
+    "Dj": 0
+   }
+  },
+  {
+   "expect": 5,
+   "id": "P-PT-due02",
+   "input": {
+    "Dj": 3
+   }
+  },
+  {
+   "expect": 2,
+   "id": "P-PT-due03",
+   "input": {
+    "Dj": 4
+   }
+  },
+  {
+   "expect": 2,
+   "id": "P-PT-due04",
+   "input": {
+    "Dj": 7
+   }
+  },
+  {
+   "expect": 0,
+   "id": "P-PT-due05",
+   "input": {
+    "Dj": 8
+   }
+  },
+  {
+   "expect": 0,
+   "id": "P-PT-due06",
+   "input": {
+    "Dj": 100
+   }
+  },
+  {
+   "expect": 0,
+   "id": "P-PT-att00",
+   "input": {
+    "S": null
+   }
+  },
+  {
+   "expect": 0,
+   "id": "P-PT-att01",
+   "input": {
+    "S": 0
+   }
+  },
+  {
+   "expect": 0,
+   "id": "P-PT-att02",
+   "input": {
+    "S": 4
+   }
+  },
+  {
+   "expect": 5,
+   "id": "P-PT-att03",
+   "input": {
+    "S": 5
+   }
+  },
+  {
+   "expect": 5,
+   "id": "P-PT-att04",
+   "input": {
+    "S": 9
+   }
+  },
+  {
+   "expect": 10,
+   "id": "P-PT-att05",
+   "input": {
+    "S": 10
+   }
+  },
+  {
+   "expect": 10,
+   "id": "P-PT-att06",
+   "input": {
+    "S": 100
+   }
+  },
+  {
+   "expect": 0,
+   "id": "P-PT-risk00",
+   "input": {
+    "risk_level": "LOW"
+   }
+  },
+  {
+   "expect": 8,
+   "id": "P-PT-risk01",
+   "input": {
+    "risk_level": "MEDIUM"
+   }
+  },
+  {
+   "expect": 17,
+   "id": "P-PT-risk02",
+   "input": {
+    "risk_level": "HIGH"
+   }
+  },
+  {
+   "expect": 25,
+   "id": "P-PT-risk03",
+   "input": {
+    "risk_level": "CRITICAL"
+   }
+  },
+  {
+   "expect": 5,
+   "id": "P-PT-risk04",
+   "input": {
+    "risk_level": null
+   }
+  }
+ ]
+}

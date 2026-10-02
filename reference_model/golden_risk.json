@@ -1,0 +1,889 @@
+{
+ "aggregate_B_R": [
+  {
+   "expect": {
+    "B": 3,
+    "R": 2
+   },
+   "id": "R-AG30",
+   "input": {
+    "promises": 3,
+    "reversed": 2
+   }
+  },
+  {
+   "expect": {
+    "B": 0,
+    "R": 0
+   },
+   "id": "R-AG31",
+   "input": {
+    "promises": 0,
+    "reversed": 0
+   }
+  }
+ ],
+ "aggregate_D_Eo": [
+  {
+   "expect": [
+    20,
+    400
+   ],
+   "id": "R-AG01",
+   "input": "open_a"
+  },
+  {
+   "expect": [
+    0,
+    0
+   ],
+   "id": "R-AG02",
+   "input": "aucune facture en retard"
+  },
+  {
+   "expect": [
+    0,
+    0
+   ],
+   "id": "R-AG03",
+   "input": "aucune facture ouverte"
+  }
+ ],
+ "aggregate_T": [
+  {
+   "expect": -10,
+   "id": "R-AG20",
+   "input": "deux fenêtres suffisantes"
+  },
+  {
+   "expect": null,
+   "id": "R-AG21",
+   "input": "fenêtre récente insuffisante (1 seule)"
+  },
+  {
+   "expect": null,
+   "id": "R-AG22",
+   "input": "fenêtre précédente insuffisante (1 seule)"
+  },
+  {
+   "expect": null,
+   "id": "R-AG23",
+   "input": "aucune facture"
+  }
+ ],
+ "aggregate_n_L_M": [
+  {
+   "expect": [
+    3,
+    666,
+    4
+   ],
+   "id": "R-AG10",
+   "input": "n=3 mixte"
+  },
+  {
+   "expect": [
+    2,
+    null,
+    null
+   ],
+   "id": "R-AG11",
+   "input": "n=2 (insuffisant)"
+  },
+  {
+   "expect": [
+    0,
+    null,
+    null
+   ],
+   "id": "R-AG12",
+   "input": "n=0"
+  },
+  {
+   "expect": [
+    3,
+    1000,
+    2
+   ],
+   "id": "R-AG13",
+   "input": "tous en retard"
+  }
+ ],
+ "decision": [
+  {
+   "expect": {
+    "changed": true,
+    "eligible": true,
+    "event": null,
+    "level": "LOW"
+   },
+   "id": "R-DC01",
+   "title": "premier calcul : profil créé, aucun RISK_CHANGED"
+  },
+  {
+   "expect": {
+    "changed": true,
+    "event": null,
+    "level": "LOW"
+   },
+   "id": "R-DC02",
+   "title": "second calcul, mêmes facts : previous_level None→LOW change les entrées normalisées (RP14)"
+  },
+  {
+   "expect": {
+    "changed": false,
+    "event": null
+   },
+   "id": "R-DC03",
+   "title": "troisième calcul, mêmes facts, previous_level stable : régime stationnaire"
+  },
+  {
+   "expect": {
+    "changed": true,
+    "event": {
+     "from_level": "LOW",
+     "score": 45,
+     "to_level": "MEDIUM"
+    },
+    "level": "MEDIUM"
+   },
+   "id": "R-DC04",
+   "title": "niveau publié change : RISK_CHANGED"
+  },
+  {
+   "expect": {
+    "changed": false,
+    "eligible": false,
+    "event": null,
+    "factors": null,
+    "level": null,
+    "normalized_inputs": null,
+    "score": null
+   },
+   "id": "R-DC05",
+   "title": "client jamais émis : pas de profil"
+  }
+ ],
+ "eligibility": [
+  {
+   "expect": true,
+   "id": "R-EL00",
+   "input": {
+    "has_ever_issued": true
+   }
+  },
+  {
+   "expect": false,
+   "id": "R-EL01",
+   "input": {
+    "has_ever_issued": false
+   }
+  }
+ ],
+ "formula": [
+  {
+   "expect": {
+    "factors": {
+     "factors": [
+      {
+       "factor": "delay",
+       "max": 30,
+       "normalized_input": "pts=5",
+       "points": 5
+      },
+      {
+       "factor": "history",
+       "max": 25,
+       "normalized_input": "late=0;delay=0",
+       "points": 0
+      },
+      {
+       "factor": "broken_promises",
+       "max": 15,
+       "normalized_input": "pts=0",
+       "points": 0
+      },
+      {
+       "factor": "exposure",
+       "max": 15,
+       "normalized_input": "pts=1",
+       "points": 1
+      },
+      {
+       "factor": "reversed_payments",
+       "max": 10,
+       "normalized_input": "pts=0",
+       "points": 0
+      },
+      {
+       "factor": "trend",
+       "max": 5,
+       "normalized_input": "pts=0",
+       "points": 0
+      }
+     ],
+     "meta": {
+      "confidence": "LOW"
+     }
+    },
+    "level": "LOW",
+    "normalized_inputs": {
+     "broken_pts": 0,
+     "confidence": "LOW",
+     "delay_pts": 5,
+     "exposure_pts": 1,
+     "history_delay_pts": 0,
+     "history_late_pts": 0,
+     "previous_level": null,
+     "reversed_pts": 0,
+     "trend_pts": 0
+    },
+    "score": 6
+   },
+   "id": "R-SC-G1",
+   "input": {
+    "B": 0,
+    "C": 1000000,
+    "D": 3,
+    "Eo": 100000,
+    "L": 0,
+    "M": 0,
+    "R": 0,
+    "T": null,
+    "n": 0,
+    "previous_level": null
+   }
+  },
+  {
+   "expect": {
+    "factors": {
+     "factors": [
+      {
+       "factor": "delay",
+       "max": 30,
+       "normalized_input": "pts=20",
+       "points": 20
+      },
+      {
+       "factor": "history",
+       "max": 25,
+       "normalized_input": "late=11;delay=6",
+       "points": 17
+      },
+      {
+       "factor": "broken_promises",
+       "max": 15,
+       "normalized_input": "pts=5",
+       "points": 5
+      },
+      {
+       "factor": "exposure",
+       "max": 15,
+       "normalized_input": "pts=9",
+       "points": 9
+      },
+      {
+       "factor": "reversed_payments",
+       "max": 10,
+       "normalized_input": "pts=0",
+       "points": 0
+      },
+      {
+       "factor": "trend",
+       "max": 5,
+       "normalized_input": "pts=2",
+       "points": 2
+      }
+     ],
+     "meta": {
+      "confidence": "HIGH"
+     }
+    },
+    "level": "HIGH",
+    "normalized_inputs": {
+     "broken_pts": 5,
+     "confidence": "HIGH",
+     "delay_pts": 20,
+     "exposure_pts": 9,
+     "history_delay_pts": 6,
+     "history_late_pts": 11,
+     "previous_level": null,
+     "reversed_pts": 0,
+     "trend_pts": 2
+    },
+    "score": 53
+   },
+   "id": "R-SC-G2",
+   "input": {
+    "B": 1,
+    "C": 1000000,
+    "D": 20,
+    "Eo": 600000,
+    "L": 750,
+    "M": 20,
+    "R": 0,
+    "T": 4,
+    "n": 8,
+    "previous_level": null
+   }
+  },
+  {
+   "expect": {
+    "factors": {
+     "factors": [
+      {
+       "factor": "delay",
+       "max": 30,
+       "normalized_input": "pts=30",
+       "points": 30
+      },
+      {
+       "factor": "history",
+       "max": 25,
+       "normalized_input": "late=13;delay=10",
+       "points": 23
+      },
+      {
+       "factor": "broken_promises",
+       "max": 15,
+       "normalized_input": "pts=15",
+       "points": 15
+      },
+      {
+       "factor": "exposure",
+       "max": 15,
+       "normalized_input": "pts=15",
+       "points": 15
+      },
+      {
+       "factor": "reversed_payments",
+       "max": 10,
+       "normalized_input": "pts=10",
+       "points": 10
+      },
+      {
+       "factor": "trend",
+       "max": 5,
+       "normalized_input": "pts=5",
+       "points": 5
+      }
+     ],
+     "meta": {
+      "confidence": "HIGH"
+     }
+    },
+    "level": "CRITICAL",
+    "normalized_inputs": {
+     "broken_pts": 15,
+     "confidence": "HIGH",
+     "delay_pts": 30,
+     "exposure_pts": 15,
+     "history_delay_pts": 10,
+     "history_late_pts": 13,
+     "previous_level": null,
+     "reversed_pts": 10,
+     "trend_pts": 5
+    },
+    "score": 98
+   },
+   "id": "R-SC-G3",
+   "input": {
+    "B": 3,
+    "C": 1000000,
+    "D": 70,
+    "Eo": 2000000,
+    "L": 900,
+    "M": 40,
+    "R": 2,
+    "T": 10,
+    "n": 10,
+    "previous_level": null
+   }
+  },
+  {
+   "expect": {
+    "factors": {
+     "factors": [
+      {
+       "factor": "delay",
+       "max": 30,
+       "normalized_input": "pts=0",
+       "points": 0
+      },
+      {
+       "factor": "history",
+       "max": 25,
+       "normalized_input": "late=1;delay=1",
+       "points": 2
+      },
+      {
+       "factor": "broken_promises",
+       "max": 15,
+       "normalized_input": "pts=0",
+       "points": 0
+      },
+      {
+       "factor": "exposure",
+       "max": 15,
+       "normalized_input": "pts=0",
+       "points": 0
+      },
+      {
+       "factor": "reversed_payments",
+       "max": 10,
+       "normalized_input": "pts=0",
+       "points": 0
+      },
+      {
+       "factor": "trend",
+       "max": 5,
+       "normalized_input": "pts=0",
+       "points": 0
+      }
+     ],
+     "meta": {
+      "confidence": "HIGH"
+     }
+    },
+    "level": "LOW",
+    "normalized_inputs": {
+     "broken_pts": 0,
+     "confidence": "HIGH",
+     "delay_pts": 0,
+     "exposure_pts": 0,
+     "history_delay_pts": 1,
+     "history_late_pts": 1,
+     "previous_level": null,
+     "reversed_pts": 0,
+     "trend_pts": 0
+    },
+    "score": 2
+   },
+   "id": "R-SC-G4",
+   "input": {
+    "B": 0,
+    "C": 1000000,
+    "D": 0,
+    "Eo": 0,
+    "L": 100,
+    "M": 3,
+    "R": 0,
+    "T": 0,
+    "n": 12,
+    "previous_level": null
+   }
+  },
+  {
+   "expect": {
+    "factors": {
+     "factors": [
+      {
+       "factor": "delay",
+       "max": 30,
+       "normalized_input": "pts=26",
+       "points": 26
+      },
+      {
+       "factor": "history",
+       "max": 25,
+       "normalized_input": "late=0;delay=0",
+       "points": 0
+      },
+      {
+       "factor": "broken_promises",
+       "max": 15,
+       "normalized_input": "pts=0",
+       "points": 0
+      },
+      {
+       "factor": "exposure",
+       "max": 15,
+       "normalized_input": "pts=15",
+       "points": 15
+      },
+      {
+       "factor": "reversed_payments",
+       "max": 10,
+       "normalized_input": "pts=0",
+       "points": 0
+      },
+      {
+       "factor": "trend",
+       "max": 5,
+       "normalized_input": "pts=0",
+       "points": 0
+      }
+     ],
+     "meta": {
+      "confidence": "LOW"
+     }
+    },
+    "level": "MEDIUM",
+    "normalized_inputs": {
+     "broken_pts": 0,
+     "confidence": "LOW",
+     "delay_pts": 26,
+     "exposure_pts": 15,
+     "history_delay_pts": 0,
+     "history_late_pts": 0,
+     "previous_level": null,
+     "reversed_pts": 0,
+     "trend_pts": 0
+    },
+    "score": 41
+   },
+   "id": "R-SC-G5",
+   "input": {
+    "B": 0,
+    "C": 1000000,
+    "D": 35,
+    "Eo": 1500000,
+    "L": 1000,
+    "M": 45,
+    "R": 0,
+    "T": null,
+    "n": 2,
+    "previous_level": null
+   }
+  }
+ ],
+ "hysteresis_example": {
+  "expect": {
+   "changes": 2,
+   "levels": [
+    "MEDIUM",
+    "MEDIUM",
+    "MEDIUM",
+    "HIGH",
+    "HIGH",
+    "HIGH",
+    "HIGH",
+    "HIGH",
+    "MEDIUM",
+    "MEDIUM",
+    "MEDIUM"
+   ]
+  },
+  "id": "R-HY01",
+  "input": {
+   "scores": [
+    44,
+    46,
+    49,
+    51,
+    48,
+    47,
+    49,
+    50,
+    46,
+    45,
+    44
+   ]
+  }
+ },
+ "levels": [
+  {
+   "expect": "LOW",
+   "id": "R-LV00",
+   "input": {
+    "score": 0
+   }
+  },
+  {
+   "expect": "LOW",
+   "id": "R-LV24",
+   "input": {
+    "score": 24
+   }
+  },
+  {
+   "expect": "MEDIUM",
+   "id": "R-LV25",
+   "input": {
+    "score": 25
+   }
+  },
+  {
+   "expect": "MEDIUM",
+   "id": "R-LV49",
+   "input": {
+    "score": 49
+   }
+  },
+  {
+   "expect": "HIGH",
+   "id": "R-LV50",
+   "input": {
+    "score": 50
+   }
+  },
+  {
+   "expect": "HIGH",
+   "id": "R-LV74",
+   "input": {
+    "score": 74
+   }
+  },
+  {
+   "expect": "CRITICAL",
+   "id": "R-LV75",
+   "input": {
+    "score": 75
+   }
+  },
+  {
+   "expect": "CRITICAL",
+   "id": "R-LV100",
+   "input": {
+    "score": 100
+   }
+  }
+ ],
+ "points": [
+  {
+   "expect": 0,
+   "id": "R-PT00",
+   "input": {
+    "D": 0
+   }
+  },
+  {
+   "expect": 5,
+   "id": "R-PT01",
+   "input": {
+    "D": 1
+   }
+  },
+  {
+   "expect": 5,
+   "id": "R-PT02",
+   "input": {
+    "D": 7
+   }
+  },
+  {
+   "expect": 12,
+   "id": "R-PT03",
+   "input": {
+    "D": 8
+   }
+  },
+  {
+   "expect": 12,
+   "id": "R-PT04",
+   "input": {
+    "D": 15
+   }
+  },
+  {
+   "expect": 20,
+   "id": "R-PT05",
+   "input": {
+    "D": 16
+   }
+  },
+  {
+   "expect": 20,
+   "id": "R-PT06",
+   "input": {
+    "D": 17
+   }
+  },
+  {
+   "expect": 20,
+   "id": "R-PT07",
+   "input": {
+    "D": 18
+   }
+  },
+  {
+   "expect": 20,
+   "id": "R-PT08",
+   "input": {
+    "D": 30
+   }
+  },
+  {
+   "expect": 26,
+   "id": "R-PT09",
+   "input": {
+    "D": 31
+   }
+  },
+  {
+   "expect": 26,
+   "id": "R-PT10",
+   "input": {
+    "D": 60
+   }
+  },
+  {
+   "expect": 30,
+   "id": "R-PT11",
+   "input": {
+    "D": 61
+   }
+  },
+  {
+   "expect": 30,
+   "id": "R-PT12",
+   "input": {
+    "D": 200
+   }
+  },
+  {
+   "expect": [
+    0,
+    0
+   ],
+   "id": "R-PT-hist00",
+   "input": {
+    "L": 999,
+    "M": 30,
+    "n": 2
+   }
+  },
+  {
+   "expect": [
+    0,
+    0
+   ],
+   "id": "R-PT-hist01",
+   "input": {
+    "L": 0,
+    "M": 0,
+    "n": 3
+   }
+  },
+  {
+   "expect": [
+    15,
+    10
+   ],
+   "id": "R-PT-hist02",
+   "input": {
+    "L": 1000,
+    "M": 30,
+    "n": 3
+   }
+  },
+  {
+   "expect": [
+    15,
+    10
+   ],
+   "id": "R-PT-hist03",
+   "input": {
+    "L": 1000,
+    "M": 35,
+    "n": 3
+   }
+  },
+  {
+   "expect": [
+    7,
+    0
+   ],
+   "id": "R-PT-hist04",
+   "input": {
+    "L": 500,
+    "M": -10,
+    "n": 3
+   }
+  },
+  {
+   "expect": [
+    7,
+    9
+   ],
+   "id": "R-PT-hist05",
+   "input": {
+    "L": 500,
+    "M": 29,
+    "n": 3
+   }
+  },
+  {
+   "expect": 0,
+   "id": "R-PT-exp00",
+   "input": {
+    "C": 0,
+    "Eo": 0
+   }
+  },
+  {
+   "expect": 0,
+   "id": "R-PT-exp01",
+   "input": {
+    "C": 1000000,
+    "Eo": 0
+   }
+  },
+  {
+   "expect": 0,
+   "id": "R-PT-exp02",
+   "input": {
+    "C": 0,
+    "Eo": 500000
+   }
+  },
+  {
+   "expect": 15,
+   "id": "R-PT-exp03",
+   "input": {
+    "C": 1000000,
+    "Eo": 1000000
+   }
+  },
+  {
+   "expect": 15,
+   "id": "R-PT-exp04",
+   "input": {
+    "C": 1000000,
+    "Eo": 2000000
+   }
+  },
+  {
+   "expect": 0,
+   "id": "R-PT-trend00",
+   "input": {
+    "T": null
+   }
+  },
+  {
+   "expect": 0,
+   "id": "R-PT-trend01",
+   "input": {
+    "T": -5
+   }
+  },
+  {
+   "expect": 0,
+   "id": "R-PT-trend02",
+   "input": {
+    "T": 0
+   }
+  },
+  {
+   "expect": 0,
+   "id": "R-PT-trend03",
+   "input": {
+    "T": 1
+   }
+  },
+  {
+   "expect": 5,
+   "id": "R-PT-trend04",
+   "input": {
+    "T": 10
+   }
+  },
+  {
+   "expect": 5,
+   "id": "R-PT-trend05",
+   "input": {
+    "T": 100
+   }
+  }
+ ]
+}
