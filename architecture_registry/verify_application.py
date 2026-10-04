@@ -47,7 +47,9 @@ OUTCOMES_DEFAULT = {'command': {'OK', 'REPLAY'}, 'handler': {'PROCESSED', 'SKIPP
                     'worker': {'OK', 'RETRYING', 'DEFERRED'}, 'system': {'OK', 'SKIPPED'}, 'service': set()}
 OUTCOMES_ALLOWED = {'command': {'OK', 'REPLAY', 'SKIPPED', 'DEFERRED'}, 'handler': {'PROCESSED', 'SKIPPED', 'RETRYING', 'DEAD'}, 'job': {'OK', 'SKIPPED'},
                     'worker': {'OK', 'RETRYING', 'DEFERRED'}, 'system': {'OK', 'SKIPPED'}, 'service': set()}
-OUTCOME_EXTRA_NAMES = {'CreateCollectionAction', 'CreateManualAction'}
+OUTCOME_EXTRA_NAMES = {'CreateCollectionAction', 'CreateManualAction',
+                       # B10 : ENGINE_CONTRACTS §5, « Transition d'état | garde d'état en base | SKIPPED » (rejouer la même transition)
+                       'CancelCollectionAction', 'CompleteTask', 'ReleaseHold'}
 ENTRY_OF_KIND = {'command': 'PUBLIC', 'handler': 'REACTION', 'job': 'BACKGROUND', 'worker': 'BACKGROUND', 'system': 'INTERNAL', 'service': 'INTERNAL'}
 SINGLE_TXN = {'une', 'par organisation', 'une par pas', 'une par tranche', 'une par facture', 'une, hors envoi'}
 GUARD_WORDS = ('idempot', 'garde', 'claim', 'bail')

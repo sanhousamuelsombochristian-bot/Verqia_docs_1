@@ -1,0 +1,109 @@
+{
+ "server": "PostgreSQL 16.2 on x86_64-pc-mingw64",
+ "experiments": [
+  {
+   "id": "PG-11a",
+   "kind": "affirmation",
+   "title": "READ COMMITTED : l'`INSERT` BLOQUÉ de T2 reçoit lui-même 23505, avec le nom de la contrainte partielle ; la reprise voit le gagnant",
+   "expected": "attente oui ; 23505 ; uq_r12_probe_dedup_key ; reprise (10, 'PROPOSED')",
+   "observed": "T2 a attendu : oui ; T2 : UniqueViolation, SQLSTATE 23505, contrainte uq_r12_probe_dedup_key ; reprise : (10, 'PROPOSED')",
+   "ok": true
+  },
+  {
+   "id": "PG-11a-REPEATABLE_READ",
+   "kind": "constat",
+   "title": "REPEATABLE READ, instantané de T2 antérieur à l'insertion de T1 : ce que reçoit l'`INSERT` bloqué ; ce que lit la reprise",
+   "expected": "à constater (23505 avec le nom, ou 40001 de sérialisation)",
+   "observed": "T2 a attendu : oui ; T2 : UniqueViolation, SQLSTATE 23505, contrainte uq_r12_probe_dedup_key ; reprise : (10, 'PROPOSED')",
+   "ok": true
+  },
+  {
+   "id": "PG-11a-SERIALIZABLE",
+   "kind": "constat",
+   "title": "SERIALIZABLE, instantané de T2 antérieur à l'insertion de T1 : ce que reçoit l'`INSERT` bloqué ; ce que lit la reprise",
+   "expected": "à constater (23505 avec le nom, ou 40001 de sérialisation)",
+   "observed": "T2 a attendu : oui ; T2 : UniqueViolation, SQLSTATE 23505, contrainte uq_r12_probe_dedup_key ; reprise : (10, 'PROPOSED')",
+   "ok": true
+  },
+  {
+   "id": "PG-11g-READ_COMMITTED",
+   "kind": "constat",
+   "title": "READ COMMITTED, A puis INSERT : ce que reçoit l'`INSERT` bloqué après la validation du gagnant",
+   "expected": "à constater (23505 avec le nom, ou 40001 de sérialisation)",
+   "observed": "T2 a attendu : oui ; T2 : UniqueViolation, SQLSTATE 23505, contrainte uq_r12_probe_dedup_key ; reprise : (10, 'PROPOSED')",
+   "ok": true
+  },
+  {
+   "id": "PG-11g-REPEATABLE_READ",
+   "kind": "constat",
+   "title": "REPEATABLE READ, A puis INSERT : ce que reçoit l'`INSERT` bloqué après la validation du gagnant",
+   "expected": "à constater (23505 avec le nom, ou 40001 de sérialisation)",
+   "observed": "T2 a attendu : oui ; T2 : UniqueViolation, SQLSTATE 23505, contrainte uq_r12_probe_dedup_key ; reprise : (10, 'PROPOSED')",
+   "ok": true
+  },
+  {
+   "id": "PG-11g-SERIALIZABLE",
+   "kind": "constat",
+   "title": "SERIALIZABLE, A puis INSERT : ce que reçoit l'`INSERT` bloqué après la validation du gagnant",
+   "expected": "à constater (23505 avec le nom, ou 40001 de sérialisation)",
+   "observed": "T2 a attendu : oui ; T2 : UniqueViolation, SQLSTATE 23505, contrainte uq_r12_probe_dedup_key ; reprise : (10, 'PROPOSED')",
+   "ok": true
+  },
+  {
+   "id": "PG-11b",
+   "kind": "affirmation",
+   "title": "READ COMMITTED : T1 annule ; l'`INSERT` bloqué de T2 réussit, aucune violation (un 23505 n'est jamais dû à une ligne non validée)",
+   "expected": "attente oui ; T2 inséré ; occupant (11, 'PROPOSED')",
+   "observed": "T2 a attendu : oui ; T2 : ('inserted', None, None) ; reprise : (11, 'PROPOSED')",
+   "ok": true
+  },
+  {
+   "id": "PG-11b-REPEATABLE_READ",
+   "kind": "affirmation",
+   "title": "REPEATABLE READ : T1 annule ; l'`INSERT` bloqué de T2 réussit, aucune violation (un 23505 n'est jamais dû à une ligne non validée)",
+   "expected": "attente oui ; T2 inséré ; occupant (11, 'PROPOSED')",
+   "observed": "T2 a attendu : oui ; T2 : ('inserted', None, None) ; reprise : (11, 'PROPOSED')",
+   "ok": true
+  },
+  {
+   "id": "PG-11b-SERIALIZABLE",
+   "kind": "affirmation",
+   "title": "SERIALIZABLE : T1 annule ; l'`INSERT` bloqué de T2 réussit, aucune violation (un 23505 n'est jamais dû à une ligne non validée)",
+   "expected": "attente oui ; T2 inséré ; occupant (11, 'PROPOSED')",
+   "observed": "T2 a attendu : oui ; T2 : ('inserted', None, None) ; reprise : (11, 'PROPOSED')",
+   "ok": true
+  },
+  {
+   "id": "PG-11c",
+   "kind": "constat",
+   "title": "« Gagnant introuvable » (R12-O1) : T1 valide, T2 reçoit 23505, PUIS une 3e transaction annule le gagnant avant la reprise",
+   "expected": "à constater : le cas est-il atteignable ?",
+   "observed": "T2 : ('UniqueViolation', '23505', 'uq_r12_probe_dedup_key') ; T3 annule le gagnant ; reprise : None",
+   "ok": true
+  },
+  {
+   "id": "PG-11d",
+   "kind": "affirmation",
+   "title": "Sans transition concurrente hors de l'index entre la violation et la reprise, le gagnant est TOUJOURS relu",
+   "expected": "reprise (10, 'PROPOSED')",
+   "observed": "reprise : (10, 'PROPOSED')",
+   "ok": true
+  },
+  {
+   "id": "PG-11e",
+   "kind": "affirmation",
+   "title": "Une AUTRE contrainte d'unicité (clé primaire) donne aussi 23505, mais avec SON nom : le nom seul distingue la dédup",
+   "expected": "23505 ; probe_actions_pkey",
+   "observed": "SQLSTATE 23505, contrainte probe_actions_pkey",
+   "ok": true
+  },
+  {
+   "id": "PG-11f",
+   "kind": "affirmation",
+   "title": "Prédicat partiel (DATA_CONTRACT §6.1) : `CANCELLED` et `SUPPRESSED` ne bloquent pas ; `DONE` et `FAILED` bloquent",
+   "expected": "CANCELLED, SUPPRESSED acceptées ; DONE, FAILED : 23505",
+   "observed": "CANCELLED : acceptée ; SUPPRESSED : acceptée ; DONE : 23505 uq_r12_probe_dedup_key ; FAILED : 23505 uq_r12_probe_dedup_key",
+   "ok": true
+  }
+ ]
+}

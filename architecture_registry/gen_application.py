@@ -132,9 +132,9 @@ ERRORS = {
     'NormalizeImportBatch': ('IMPORT_NORMALIZATION_FAILED', 'IMPORT_BATCH_NOT_READY'),
     'ReleaseImportTranche': ('IMPORT_BATCH_NOT_READY',),
     'AuthorizeOverride': ('OVERRIDE_NOT_ALLOWED', 'OVERRIDE_ROLE_INSUFFICIENT', 'OVERRIDE_REASON_REQUIRED', 'OVERRIDE_ORIGIN_NOT_MANUAL'),
-    'CreateCollectionAction': ('SUBJECT_NOT_FOUND', 'ACTION_LEVEL_INVALID', 'ACTION_LEVEL_BELOW_MINIMUM'),
+    'CreateCollectionAction': ('SUBJECT_NOT_FOUND', 'ACTION_LEVEL_INVALID', 'ACTION_LEVEL_BELOW_MINIMUM', 'DEDUP_REPLAY_UNAVAILABLE'),       # B11 : R12-O1, option B
     'CreateManualAction': ('SUBJECT_NOT_FOUND', 'ACTION_LEVEL_INVALID', 'ACTION_LEVEL_BELOW_MINIMUM', 'OVERRIDE_NOT_ALLOWED', 'OVERRIDE_ROLE_INSUFFICIENT',
-                           'OVERRIDE_REASON_REQUIRED', 'OVERRIDE_ORIGIN_NOT_MANUAL'),
+                           'OVERRIDE_REASON_REQUIRED', 'OVERRIDE_ORIGIN_NOT_MANUAL', 'DEDUP_REPLAY_UNAVAILABLE'),                # B11
     'ExecuteDueAction': ('TEMPLATE_UNAVAILABLE',),
     'RunExecutionStep': ('EXECUTION_RATE_LIMITED',),
     'ActivateAutomation': ('AUTOMATION_PRECONDITIONS_NOT_MET', 'ENROLLMENT_PREVIEW_STALE', 'AUTOMATION_SET_LOOP_DETECTED', 'INSUFFICIENT_ROLE'),
@@ -163,7 +163,9 @@ TENANT_SPECIAL = {('events', 'OutboxPublisher'): 'RELAY', ('platform', 'Partitio
 # les issues d'un handler sont celles de son reçu (`REPLAY` d'un handler est compté, non stocké : EC-02).
 OUTCOMES = {'command': ('OK', 'REPLAY'), 'handler': ('PROCESSED', 'SKIPPED', 'RETRYING', 'DEAD'), 'job': ('OK', 'SKIPPED'),
             'worker': ('OK', 'RETRYING', 'DEFERRED'), 'system': ('OK', 'SKIPPED'), 'service': ()}
-OUTCOME_EXTRAS = {'CreateCollectionAction': ('SKIPPED', 'DEFERRED'), 'CreateManualAction': ('SKIPPED', 'DEFERRED')}   # EC-11 : décision d'action
+OUTCOME_EXTRAS = {'CreateCollectionAction': ('SKIPPED', 'DEFERRED'), 'CreateManualAction': ('SKIPPED', 'DEFERRED'),   # EC-11 : décision d'action
+                  # B10 (DV5-2 bis) : EC §5, « Transition d'état | garde d'état en base | SKIPPED » — rejouer la MÊME transition
+                  'CancelCollectionAction': ('SKIPPED',), 'CompleteTask': ('SKIPPED',), 'ReleaseHold': ('SKIPPED',)}
 
 # Cas d'usage composés (liste fermée et nominative, TD58) : phases ordonnées, une transaction chacune.
 # (rôle, modules, appels `own:` sans préfixe, écritures propres au cas d'usage dans cette phase, description)

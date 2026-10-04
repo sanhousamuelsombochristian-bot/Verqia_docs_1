@@ -9,6 +9,7 @@ Trois familles :
 
 Lancement : python -m unittest test_collection_ref (dans reference_model/).
 """
+import io
 import itertools
 import random
 import unittest
@@ -67,7 +68,7 @@ class TestClosedLists(unittest.TestCase):
             self.assertIn(t, R.ACTION_TYPES)
 
     def test_dedup_key_formula_carries_occurrence(self):
-        self.assertEqual(R.dedup_key('INV-1', 'REMINDER', 3, 1, 0), 'INV-1:REMINDER:L3:C1:R0')
+        self.assertEqual(R.dedup_key('INV-1', 'REMINDER', 3, 1, '0.0'), 'INV-1:REMINDER:L3:C1:R0.0')      # [FAIT]
         self.assertTrue(R.manual_dedup_key('k1').startswith('manual:'))
 
     def test_only_cancelled_and_suppressed_release_the_key(self):
@@ -104,13 +105,18 @@ class TestSlotCalculatorDoubleTranscription(unittest.TestCase):
     def test_after_window_moves_to_next_business_day(self):
         at = self._both(as_of=datetime(2026, 10, 1, 19, 0), target=datetime(2026, 10, 1, 19, 0),
                         rules=RULES, client_facing=True)
-        self.assertEqual(at, datetime(2026, 10, 2, 9, 0))
+        self.assertEqual(at, datetime(2026, 10, 2, 8, 0))         # [DV5-3] jour ouvré suivant, DÉBUT DE FENÊTRE
 
     def test_friday_after_window_skips_the_weekend(self):
         at = self._both(as_of=datetime(2026, 10, 30, 19, 0), target=datetime(2026, 10, 30, 19, 0),
                         rules=RULES, client_facing=True)
-        self.assertEqual(at.date(), date(2026, 11, 2))          # lundi
-        self.assertEqual(at.time(), time(9, 0))
+        self.assertEqual(at, datetime(2026, 11, 2, 8, 0))         # [DV5-3] lundi, début de fenêtre
+
+    def test_after_close_on_a_non_business_day_reaches_the_next_business_morning(self):
+        """[DV5-3] Samedi 19:00 → lundi 08:00, pas mardi : la sortie par le haut se traite avant le saut des jours non ouvrés."""
+        at = self._both(as_of=datetime(2026, 10, 24, 19, 0), target=datetime(2026, 10, 24, 19, 0),
+                        rules=RULES, client_facing=True)
+        self.assertEqual(at, datetime(2026, 10, 26, 8, 0))
 
     def test_customer_daily_cap_moves_to_next_business_day(self):
         at = self._both(as_of=datetime(2026, 10, 1, 8, 0), target=datetime(2026, 10, 1, 9, 0),
@@ -133,17 +139,15 @@ class TestSlotCalculatorDoubleTranscription(unittest.TestCase):
                         rules=RULES, client_facing=False, task_due_date=date(2026, 10, 25))
         self.assertEqual(at, datetime(2026, 10, 26, 9, 0))      # dimanche -> lundi, heure conservée
 
-    def test_a_send_hour_outside_the_window_is_refused_by_both_transcriptions(self):
-        """CONSTAT relevé par l'oracle : §7 ne termine pas si l'heure visée (catégorie B) tombe hors de la
-        fenêtre (catégorie C). Aucune source ne l'interdit, aucune ne définit de repli : refus explicite."""
+    def test_an_aimed_hour_outside_the_window_now_terminates_in_both_transcriptions(self):
+        """[DV5-3] Ex-`PlacementRulesInconsistent` (déclassée) : heure visée 20:00, fenêtre 08:00-18:00 → lendemain 08:00."""
         rules = R.ReferenceOrgRules(comm_window_start=time(8, 0), comm_window_end=time(18, 0), send_hour=time(20, 0))
-        for fn in (R.next_slot_a, R.next_slot_b):
-            with self.assertRaises(R.PlacementRulesInconsistent):
-                fn(as_of=datetime(2026, 10, 1, 7, 0), target=datetime(2026, 10, 1, 20, 0),
-                   rules=rules, client_facing=True)
+        at = self._both(as_of=datetime(2026, 10, 1, 7, 0), target=datetime(2026, 10, 1, 20, 0), rules=rules, client_facing=True)
+        self.assertEqual(at, datetime(2026, 10, 2, 8, 0))
+        self.assertFalse(hasattr(R, 'PlacementRulesInconsistent'))
 
-    def test_a_send_hour_outside_the_window_does_not_block_a_human_task(self):
-        """Point 5 : une tâche humaine n'a pas de fenêtre — la contradiction ne la concerne donc pas."""
+    def test_a_send_hour_outside_the_window_does_not_concern_a_human_task(self):
+        """Point 5 : une tâche humaine n'a pas de fenêtre."""
         rules = R.ReferenceOrgRules(comm_window_start=time(8, 0), comm_window_end=time(18, 0), send_hour=time(20, 0))
         at = self._both(as_of=datetime(2026, 10, 25, 7, 0), target=datetime(2026, 10, 25, 20, 0),
                         rules=rules, client_facing=False, task_due_date=date(2026, 10, 26))
@@ -159,18 +163,16 @@ class TestSlotCalculatorDoubleTranscription(unittest.TestCase):
             rules = R.ReferenceOrgRules(
                 comm_window_start=time(rng.choice([0, 6, 8, 9]), rng.choice([0, 30])),
                 comm_window_end=time(rng.choice([13, 17, 18, 19, 23]), rng.choice([0, 30])),
-                business_weekdays=rng.choice([(0, 1, 2, 3, 4), (0, 1, 2, 3, 4, 5), (1, 2, 3), (0,)]),
+                business_weekdays=rng.choice([(1, 2, 3, 4, 5), (1, 2, 3, 4, 5, 6), (2, 3, 4), (7,)]),          # ISO
                 holidays=frozenset({date(2026, 1, 1), date(2026, 5, 1), date(2026, 12, 25)}),
                 send_hour=time(rng.choice([8, 9, 10, 12]), rng.choice([0, 30])),
                 max_customer_messages_per_day=rng.choice([0, 1, 2, 5]),
                 send_rate_per_hour=rng.choice([0, 1, 200]))
-            if not rules.send_hour_inside_window():
-                continue                                    # configuration refusée : constat séparé, testé ci-dessus
             self._both(as_of=target - timedelta(hours=rng.randrange(0, 72)), target=target, rules=rules,
                        client_facing=rng.choice([True, False]), task_due_date=target.date(),
                        messages_that_day=rng.randrange(0, 4), sends_that_hour=rng.choice([0, 1, 5, 200, 999]))
             compared += 1
-        self.assertGreater(compared, 3000)                  # le filtre ne doit pas vider le balayage
+        self.assertEqual(compared, 5000)                    # [DV5-3] plus aucune configuration n'est refusée
 
     def test_the_two_transcriptions_agree_on_a_random_grid(self):
         rng = random.Random(20260929)
@@ -180,7 +182,7 @@ class TestSlotCalculatorDoubleTranscription(unittest.TestCase):
             rules = R.ReferenceOrgRules(
                 comm_window_start=time(rng.choice([7, 8, 9]), 0),
                 comm_window_end=time(rng.choice([17, 18, 19]), 0),
-                business_weekdays=rng.choice([(0, 1, 2, 3, 4), (0, 1, 2, 3, 4, 5), (1, 2, 3)]),
+                business_weekdays=rng.choice([(1, 2, 3, 4, 5), (1, 2, 3, 4, 5, 6), (2, 3, 4)]),                # ISO
                 holidays=frozenset({date(2026, 10, 12), date(2026, 11, 11)}),
                 send_hour=time(rng.choice([9, 10, 14]), 0),
                 max_customer_messages_per_day=rng.choice([1, 2, 5]),
@@ -223,32 +225,32 @@ class TestRescheduleAnchor(unittest.TestCase):
 
 class TestCreation(unittest.TestCase):
     def test_proceed_creates_proposed_and_emits_proposed(self):
-        cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='REMINDER', level=1, cycle=0, occurrence=0)
+        cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='REMINDER', level=1, cycle=0, occurrence='0.0')
         d = R.create_collection_action([], cmd, DEC_PROCEED, R.ReferenceFacts(), datetime(2026, 10, 1, 9, 0), RULES)
         self.assertEqual((d.issue, d.transition, d.events), ('OK', (None, 'PROPOSED'), ('COLLECTION_ACTION_PROPOSED',)))
-        self.assertEqual(d.dedup_key, 'INV-1:REMINDER:L1:C0:R0')
+        self.assertEqual(d.dedup_key, 'INV-1:REMINDER:L1:C0:R0.0')
 
     def test_suppress_writes_a_single_suppressed_row(self):
-        cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='REMINDER', level=1, cycle=0, occurrence=0)
+        cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='REMINDER', level=1, cycle=0, occurrence='0.0')
         dec = R.ReferenceRuleDecision(outcome='SUPPRESS', level=1, suppression_code='PAID')
         d = R.create_collection_action([], cmd, dec, R.ReferenceFacts(), datetime(2026, 10, 1, 9, 0), RULES)
         self.assertEqual((d.issue, d.transition, d.suppression), ('SKIPPED', (None, 'SUPPRESSED'), 'PAID'))
         self.assertEqual(d.events, ('COLLECTION_ACTION_SUPPRESSED',))
 
     def test_an_existing_live_key_gives_replay(self):
-        a = action(level=1, status='SCHEDULED', occurrence=0, cycle=0)
-        cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='REMINDER', level=1, cycle=0, occurrence=0)
+        a = action(level=1, status='SCHEDULED', occurrence='0.0', cycle=0)
+        cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='REMINDER', level=1, cycle=0, occurrence='0.0')
         d = R.create_collection_action([a], cmd, DEC_PROCEED, R.ReferenceFacts(), datetime(2026, 10, 1), RULES)
         self.assertEqual(d.issue, 'REPLAY')
 
     def test_a_cancelled_row_releases_the_key(self):
         a = action(level=1, status='CANCELLED')
-        cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='REMINDER', level=1, cycle=0, occurrence=0)
+        cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='REMINDER', level=1, cycle=0, occurrence='0.0')
         d = R.create_collection_action([a], cmd, DEC_PROCEED, R.ReferenceFacts(), datetime(2026, 10, 1), RULES)
         self.assertEqual(d.issue, 'OK')
 
     def test_level_out_of_range_and_below_floor_are_refused_but_never_computed(self):
-        cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='REMINDER', level=9, cycle=0, occurrence=0)
+        cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='REMINDER', level=9, cycle=0, occurrence='0.0')
         d = R.create_collection_action([], cmd, DEC_PROCEED, R.ReferenceFacts(), datetime(2026, 10, 1), RULES)
         self.assertEqual(d.refusal, 'ACTION_LEVEL_INVALID')
         cmd2 = dict(cmd, level=2)
@@ -258,7 +260,7 @@ class TestCreation(unittest.TestCase):
 
     def test_level_regression_is_refused_with_its_open_reserve_not_an_invented_code(self):
         a = action(level=4, status='DONE')
-        cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='REMINDER', level=3, cycle=0, occurrence=1)
+        cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='REMINDER', level=3, cycle=0, occurrence='1.0')
         d = R.create_collection_action([a], cmd, DEC_PROCEED, R.ReferenceFacts(), datetime(2026, 10, 1), RULES)
         self.assertEqual(d.issue, 'REFUSED')
         self.assertIsNone(d.refusal)                            # aucun code inventé
@@ -266,7 +268,7 @@ class TestCreation(unittest.TestCase):
 
     def test_manual_creation_always_audits_and_uses_its_own_key(self):
         cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='CALL_TASK', level=3, cycle=1,
-                   occurrence=0, idempotency_key='k1')
+                   occurrence='0.0', idempotency_key='k1')
         d = R.create_collection_action([], cmd, DEC_PROCEED, R.ReferenceFacts(invoice_overdue=True),
                                        datetime(2026, 10, 20), RULES, manual=True)
         self.assertTrue(d.audit)
@@ -366,11 +368,11 @@ class TestHumanTasks(unittest.TestCase):
         self.assertEqual(dict(d.writes), {'assigned_to': 'u1'})
         self.assertEqual(d.events, ())                          # R-1 : aucun événement identifié
 
-    def test_a_second_claimant_loses_and_the_same_one_replays(self):
+    def test_any_claim_of_an_assigned_task_loses_even_by_its_assignee(self):
+        """[DV5-2] la garde `assigned_to IS NULL` refuse ; jamais `REPLAY` (il appartient au coureur, et ClaimTask n'a pas de clé)."""
         a = action(type='CALL_TASK', status='SCHEDULED', assigned_role='COLLECTOR', assigned_to='u1')
-        self.assertEqual(R.claim_task(a, 'u2', 'COLLECTOR', datetime(2026, 10, 26)).refusal,
-                         'CONCURRENT_MODIFICATION')
-        self.assertEqual(R.claim_task(a, 'u1', 'COLLECTOR', datetime(2026, 10, 26)).issue, 'REPLAY')
+        for actor in ('u2', 'u1'):
+            self.assertEqual(R.claim_task(a, actor, 'COLLECTOR', datetime(2026, 10, 26)).refusal, 'CONCURRENT_MODIFICATION', actor)
 
     def test_an_insufficient_role_cannot_claim(self):
         a = action(type='ESCALATION', status='SCHEDULED', assigned_role='MANAGER')
@@ -568,8 +570,8 @@ class TestGoldenScenario(unittest.TestCase):
         self.assertEqual(expected, datetime(2026, 10, 19, 9, 0))
 
     def test_s6_replays_on_the_key_already_reached_by_s5(self):
-        s5 = action(action_id='S5', type='ESCALATION', level=4, cycle=1, occurrence=0, status='SCHEDULED')
-        cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='ESCALATION', level=4, cycle=1, occurrence=0)
+        s5 = action(action_id='S5', type='ESCALATION', level=4, cycle=1, occurrence='0.0', status='SCHEDULED')
+        cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='ESCALATION', level=4, cycle=1, occurrence='0.0')
         dec = R.ReferenceRuleDecision(outcome='PROCEED', level=4, risk_level='MEDIUM')
         d = R.create_collection_action([s5], cmd, dec, R.ReferenceFacts(invoice_overdue=True),
                                        R.GOLDEN_S6[1], R.GOLDEN_RULES)
@@ -597,12 +599,97 @@ class TestGoldenScenario(unittest.TestCase):
 
     def test_variant_high_risk_level_five_is_received_not_computed(self):
         """§11 variante : à risque HIGH, S6 donne le niveau 5. L'oracle le REÇOIT et le valide, ne le calcule pas."""
-        cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='ESCALATION', level=5, cycle=1, occurrence=0)
+        cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='ESCALATION', level=5, cycle=1, occurrence='0.0')
         dec = R.ReferenceRuleDecision(outcome='PROCEED', level=5, risk_level='HIGH')
         d = R.create_collection_action([], cmd, dec, R.ReferenceFacts(invoice_overdue=True),
                                        R.GOLDEN_S6[1], R.GOLDEN_RULES)
         self.assertEqual((d.issue, d.transition), ('OK', (None, 'PROPOSED')))
-        self.assertEqual(d.dedup_key, 'INV-1:ESCALATION:L5:C1:R0')
+        self.assertEqual(d.dedup_key, 'INV-1:ESCALATION:L5:C1:R0.0')
+
+
+# --------------------------------------------------------------------------- corrections factuelles (2026-10-04)
+
+class TestFactualCorrections(unittest.TestCase):
+    """Défauts de l'oracle révélés en écrivant le Domain depuis les sources gelées, et corrigés : chacun cite sa source."""
+
+    def test_max_attempts_is_a_per_row_column(self):
+        """DATA_CONTRACT §6.1 : `max_attempts` BETWEEN 1 AND 10, défaut 3 — pas une constante globale."""
+        for mx in (1, 3, 5, 10):
+            a = action(status='EXECUTING', attempts=mx - 1, max_attempts=mx, executing_since=datetime(2026, 10, 2, 9, 0))
+            self.assertEqual(R.on_notification_result(a, 'FAILED', datetime(2026, 10, 2, 9, 5), RULES,
+                                                      error_class='TRANSIENT').transition, ('EXECUTING', 'SCHEDULED'), mx)
+            a = action(status='EXECUTING', attempts=mx, max_attempts=mx, executing_since=datetime(2026, 10, 2, 9, 0))
+            self.assertEqual(R.on_notification_result(a, 'FAILED', datetime(2026, 10, 2, 9, 5), RULES,
+                                                      error_class='TRANSIENT').transition, ('EXECUTING', 'FAILED'), mx)
+
+    def test_a_retry_respects_the_communication_window(self):
+        """§9 : « les réessais respectent la fenêtre de communication » ; §7 point 1 : « ou `retry_at` »."""
+        a = action(status='EXECUTING', attempts=1, executing_since=datetime(2026, 10, 2, 17, 58))   # vendredi
+        d = R.on_notification_result(a, 'FAILED', datetime(2026, 10, 2, 17, 58), RULES, error_class='TRANSIENT')
+        self.assertEqual(d.retry_at, datetime(2026, 10, 5, 8, 0))       # 18:03 → lundi 08:00 (DV5-3), pas vendredi 18:03
+        self.assertEqual(dict(d.writes)['scheduled_for'], d.retry_at)
+
+    def test_a_task_without_a_pool_opens_to_nobody_else(self):
+        """DATA_CONTRACT §6.1 : pas de pool, pas de membres — seul l'assigné nommé peut terminer."""
+        a = action(type='CALL_TASK', status='SCHEDULED', assigned_role=None, assigned_to='u1')
+        for role in ('COLLECTOR', 'MANAGER', 'OWNER'):
+            self.assertEqual(R.complete_task(a, 'u9', role, 'CONTACTED', datetime(2026, 10, 26)).refusal, 'INSUFFICIENT_ROLE', role)
+        self.assertEqual(R.complete_task(a, 'u1', 'COLLECTOR', 'CONTACTED', datetime(2026, 10, 26)).issue, 'OK')
+
+    def test_hold_kinds_and_invoice_scope_consistency(self):
+        self.assertEqual(R.ReferenceHold(hold_id='H', scope='INVOICE').kind, 'MANUAL_SUSPENSION')
+        h = R.ReferenceHold(hold_id='H', scope='INVOICE', invoice_id='INV-1', customer_id='CUS-1', reason='r',
+                            starts_at=datetime(2026, 10, 1))
+        self.assertEqual(R.place_hold([], h, 'MANAGER', datetime(2026, 10, 1)).refusal, 'HOLD_TARGET_MISMATCH')
+
+    def test_a_hold_restricted_to_an_automation_covers_only_its_actions(self):
+        h = R.ReferenceHold(hold_id='H', scope='ORGANIZATION', automation_id='AUTO-7', starts_at=datetime(2026, 10, 1))
+        self.assertTrue(R.hold_covers(h, action(automation_id='AUTO-7')))
+        self.assertFalse(R.hold_covers(h, action(automation_id='AUTO-8')))
+        self.assertFalse(R.hold_covers(h, action(automation_id=None)))           # action manuelle
+        self.assertTrue(R.hold_covers(R.ReferenceHold(hold_id='H', scope='ORGANIZATION', starts_at=datetime(2026, 10, 1)),
+                                      action(automation_id=None)))               # NULL = toutes
+
+    def test_dv5_4_manual_regression_is_refused_with_the_catalogue_code(self):
+        a = action(level=4, status='DONE')
+        cmd = dict(invoice_id='INV-1', customer_id='CUS-1', type='REMINDER', level=3, cycle=0, occurrence='1.0',
+                   idempotency_key='k9')
+        d = R.create_collection_action([a], cmd, DEC_PROCEED, R.ReferenceFacts(), datetime(2026, 10, 1), RULES, manual=True)
+        self.assertEqual((d.issue, d.refusal), ('REFUSED', 'ACTION_LEVEL_REGRESSION'))
+        self.assertTrue(any('DV5-4' in r for r in d.reserves))
+
+    def test_dv5_2_bis_replaying_the_same_transition_is_skipped_never_replayed(self):
+        """B10 : ENGINE_CONTRACTS §5, « Transition d'état | garde d'état en base | SKIPPED »."""
+        self.assertEqual(R.cancel_collection_action(action(status='CANCELLED'), 'm', datetime(2026, 10, 1)).issue, 'SKIPPED')
+        done = action(type='CALL_TASK', status='DONE', assigned_role='COLLECTOR', outcome='CONTACTED')
+        self.assertEqual(R.complete_task(done, 'u1', 'COLLECTOR', 'CONTACTED', datetime(2026, 10, 1)).issue, 'SKIPPED')
+        released = R.ReferenceHold(hold_id='H', scope='INVOICE', invoice_id='INV-1', status='RELEASED', starts_at=datetime(2026, 10, 1))
+        self.assertEqual(R.release_hold(released, 'MANAGER', 'r', datetime(2026, 10, 2)).issue, 'SKIPPED')
+
+    def test_dv5_2_bis_a_really_invalid_transition_keeps_its_error(self):
+        for s in ('DONE', 'FAILED', 'SUPPRESSED'):
+            self.assertEqual(R.cancel_collection_action(action(status=s), 'm', datetime(2026, 10, 1)).refusal,
+                             'ACTION_INVALID_TRANSITION', s)
+        for s in ('CANCELLED', 'SUPPRESSED', 'FAILED'):
+            a = action(type='CALL_TASK', status=s, assigned_role='COLLECTOR')
+            self.assertEqual(R.complete_task(a, 'u1', 'COLLECTOR', 'CONTACTED', datetime(2026, 10, 1)).refusal,
+                             'ACTION_INVALID_TRANSITION', s)
+        expired = R.ReferenceHold(hold_id='H', scope='INVOICE', invoice_id='INV-1', status='EXPIRED', starts_at=datetime(2026, 10, 1))
+        self.assertEqual(R.release_hold(expired, 'MANAGER', 'r', datetime(2026, 10, 2)).refusal, 'HOLD_NOT_ACTIVE')
+
+    def test_dv5_2_a_replayed_reschedule_satisfies_its_guard_and_rewrites_the_same_slot(self):
+        a = action(status='SCHEDULED', scheduled_for=datetime(2026, 10, 9, 9, 0))
+        d = R.reschedule_action(a, datetime(2026, 10, 9, 9, 0), datetime(2026, 10, 1, 9, 0), RULES)
+        self.assertEqual((d.issue, dict(d.writes)), ('OK', {'scheduled_for': datetime(2026, 10, 9, 9, 0)}))
+
+    def test_no_function_proposes_replay_any_more(self):
+        import ast, os
+        with io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'collection_ref.py'), encoding='utf-8') as f:
+            tree = ast.parse(f.read())
+        calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call) and getattr(n.func, 'id', None) == '_decision'
+                 and len(n.args) > 1 and isinstance(n.args[1], ast.Constant) and n.args[1].value == 'REPLAY']
+        # seule la création sur `dedup_key` occupée garde `REPLAY` : C11, EXPLICIT, et réserve R-12 côté Domain
+        self.assertEqual(len(calls), 1)
 
 
 # --------------------------------------------------------------------------- propriétés transversales
@@ -611,7 +698,7 @@ class TestCrossCuttingProperties(unittest.TestCase):
     def test_no_decision_ever_emits_an_event_outside_the_frozen_catalogue(self):
         calls = [
             R.create_collection_action([], dict(invoice_id='I', customer_id='C', type='REMINDER', level=1,
-                                                cycle=0, occurrence=0), DEC_PROCEED, R.ReferenceFacts(),
+                                                cycle=0, occurrence='0.0'), DEC_PROCEED, R.ReferenceFacts(),
                                         datetime(2026, 10, 1, 9, 0), RULES),
             R.advance_proposed_action(action(status='PROPOSED'), DEC_PROCEED, R.ReferenceFacts(),
                                       datetime(2026, 10, 1, 9, 0), RULES),

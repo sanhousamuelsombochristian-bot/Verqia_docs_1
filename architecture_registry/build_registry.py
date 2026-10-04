@@ -50,6 +50,8 @@ AMENDMENTS = [
     ('A2', '2026-09-19', "dépendances `imports → risk, priority, cashflow` et `automation → cashflow` (émission d'une demande `REQUEST` : classe canonique chez le moteur destinataire)", 'donnée : `deps` du Module Registry (constat §8, option 1) ; TD10 intact : dépendance vers `contracts`, jamais vers l\'implémentation', 'oui, 2026-09-19'),
     ('A3', '2026-09-19', "le générateur compte l'émission d'un événement d'un autre module comme dépendance requise", 'outil (vérification) ; aucune donnée', 'oui, avec A2'),
     ('A4', '2026-09-19', "`events.OutboxPublisher` : champ `txn` `une` → `trois : réclamer par bail ; chaque handler dans sa transaction ; poser publié`", 'donnée : texte de transaction, aligné sur TD33 (frozen) ; aucune écriture, aucun verrou, aucun événement modifié', 'à valider avec Application Contract V1'),
+    ('A5', '2026-10-04', "générateur de contrats (`gen_contracts.load_catalogue_full`) : une parenthèse de la colonne payload du catalogue (Invariants §10.3) énumère les VALEURS d'un champ et n'ajoute pas de champs ; `CollectionHoldReleased(scope, cause, RELEASED, EXPIRED)` devient `CollectionHoldReleased(scope, cause)`",
+     'outil (génération) ; DV5-1, relevé en écrivant le Collection Domain : B2/B3 ne pouvaient pas émettre l\'événement sans fabriquer deux valeurs. Une seule ligne du catalogue est concernée (vérifié sur les 77 événements) ; aucun document gelé modifié', 'oui, 2026-10-04'),
 ]
 
 

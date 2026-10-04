@@ -43,7 +43,7 @@ class TestBaseline(unittest.TestCase):
         self.assertEqual(errors, [])
         self.assertEqual(stats['events'], 77)
         self.assertEqual(stats['commands'] + stats['handlers'], 122)
-        self.assertEqual(stats['error_codes'], 109)
+        self.assertEqual(stats['error_codes'], 110)                    # 109 + `DEDUP_REPLAY_UNAVAILABLE` (R12-B, B11)
 
     def test_generation_is_deterministic(self):
         a, _ = G.generate()

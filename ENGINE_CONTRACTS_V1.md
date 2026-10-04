@@ -276,8 +276,8 @@ Contrat commun : **idempotent par construction** ; verrou consultatif par `(job,
 
 | Contrat | Entrée | Sortie / postconditions | Erreurs principales | Idempotence | Transaction |
 |---|---|---|---|---|---|
-| `CreateCollectionAction` | contexte d'exécution (`execution_id`, `step_id`), sujet, type, canal | `PROPOSED` / `SCHEDULED` / `PENDING_APPROVAL` / `SUPPRESSED`, ou `SKIPPED` / `DEFERRED` ; `decision_snapshot` écrit ; `occurrence` **lue** dans le contexte d'exécution | `SUBJECT_NOT_FOUND` · `ACTION_LEVEL_INVALID` · `ACTION_LEVEL_BELOW_MINIMUM` | `dedup_key` → `REPLAY` | **une par module propriétaire** (action `PROPOSED`, puis approbation, puis transition : TD58) ; l'évaluation à la création est **indicative** (EC8) |
-| `CreateManualAction` | sujet, type, niveau, canal, `OverrideGrant[]?` | idem, avec audit | idem + `OVERRIDE_*` | `manual:{idempotency_key}` | une |
+| `CreateCollectionAction` | contexte d'exécution (`execution_id`, `step_id`), sujet, type, canal | `PROPOSED` / `SCHEDULED` / `PENDING_APPROVAL` / `SUPPRESSED`, ou `SKIPPED` / `DEFERRED` ; `decision_snapshot` écrit ; `occurrence` **lue** dans le contexte d'exécution | `SUBJECT_NOT_FOUND` · `ACTION_LEVEL_INVALID` · `ACTION_LEVEL_BELOW_MINIMUM` · `DEDUP_REPLAY_UNAVAILABLE` | `dedup_key` → `REPLAY` ; objet occupant non récupérable à la reprise → `DEDUP_REPLAY_UNAVAILABLE` (R12-B) | **une par module propriétaire** (action `PROPOSED`, puis approbation, puis transition : TD58) ; l'évaluation à la création est **indicative** (EC8) |
+| `CreateManualAction` | sujet, type, niveau, canal, `OverrideGrant[]?` | idem, avec audit | idem + `OVERRIDE_*` | `manual:{idempotency_key}` ; même résolution que ci-dessus (R12-B) | une |
 | `ExecuteDueAction` (worker) | action `SCHEDULED` échue | revalidation complète (contexte D), dont la **revérification des grants** (acteur actif, rôle courant, organisation, exception encore contournable : Collection V1.2 G4) ; puis `EXECUTING` (transaction de claim) ; la notification est créée ensuite, dans la transaction de `notifications` ; ou `SUPPRESSED` / `DEFERRED` | `TEMPLATE_UNAVAILABLE` | verrou de ligne + garde d'état | une par action ; **envoi hors transaction** |
 | `HandleSendResult` | résultat d'envoi | `DONE` / retour `SCHEDULED` (tentative) / `FAILED` ; ligne d'essai | — | `(notification_id, attempt_no)` | une |
 | `CompleteTask` | tâche `SCHEDULED`, issue (liste fermée) | `DONE` | `ACTION_INVALID_TRANSITION` · `INSUFFICIENT_ROLE` | garde d'état | une |
@@ -447,6 +447,12 @@ La **matrice de tests globale** (passe suivante) assemble ces familles avec cell
 | **P4** | **`preview_as_of = active_since`** pour une activation issue d'un aperçu ; si l'empreinte a changé, `ENROLLMENT_PREVIEW_STALE` et **aucune inscription partielle n'est conservée** : l'activation est tout ou rien. |
 | **P5** | Ordre des passes : **Risk / Priority / Cashflow** avant la matrice de tests globale et l'architecture technique. |
 
+### Amendements après V1.1
+
+| # | Date | Amendement | Nature |
+|---|---|---|---|
+| **R12-B** | 2026-10-04 | Nouveau code `DEDUP_REPLAY_UNAVAILABLE` (`CONFLICT`, 409, retryable) : la contrainte de déduplication a établi le doublon, mais l'objet nécessaire au `REPLAY` (§0.3) n'est plus récupérable à la lecture de reprise. Produit **uniquement** par l'Application dans l'unité de reprise, **jamais** par un Domain ; aucune nouvelle tentative automatique par l'Application : c'est l'appelant qui retente, sur l'état courant. Le gagnant logique du conflit a existé ; aucune règle d'identification historique n'est introduite. Ajouté à l'Annexe A (source `ARCH`, via `test_matrix/gen_errors.py`) et aux lignes `CreateCollectionAction` / `CreateManualAction` d'EC-11. Décision R12-O1 (option B) : voir `R12_O1_FICHE_B.md`. | nouveau code d'erreur ; aucune règle métier nouvelle |
+
 ---
 
 ---
@@ -461,7 +467,7 @@ Généré à partir des lignes « Erreurs » des Invariants, du tableau de valid
 
 Sources : `INV` Invariants · `RULE` Rule Engine · `COL` Collection Engine · `AUT` Automation Engine · `ENG` Engine Contracts · `ARCH` Architecture technique (erreurs techniques internes).
 
-Répartition : BUSINESS_RULE 37 · CONFLICT 24 · FORBIDDEN 5 · INTERNAL 7 · NOT_FOUND 2 · RATE_LIMITED 1 · VALIDATION 33 — **total 109 codes**.
+Répartition : BUSINESS_RULE 37 · CONFLICT 25 · FORBIDDEN 5 · INTERNAL 7 · NOT_FOUND 2 · RATE_LIMITED 1 · VALIDATION 33 — **total 110 codes**.
 
 | Code | Classe | HTTP | Nouvelle tentative | Sources |
 |---|---|---|---|---|
@@ -498,6 +504,7 @@ Répartition : BUSINESS_RULE 37 · CONFLICT 24 · FORBIDDEN 5 · INTERNAL 7 · N
 | `CUSTOMER_HAS_OPEN_INVOICES` | BUSINESS_RULE | 422 | non | INV |
 | `CUSTOMER_INACTIVE` | BUSINESS_RULE | 422 | non | INV |
 | `DB_INVARIANT_VIOLATED` | INTERNAL | 500 | non | ARCH |
+| `DEDUP_REPLAY_UNAVAILABLE` | CONFLICT | 409 | oui | ARCH |
 | `DEFINITION_ACTION_NOT_ALLOWED` | VALIDATION | 400/422 | non | RULE |
 | `DEFINITION_ACTION_SUBJECT_MISMATCH` | VALIDATION | 400/422 | non | AUT |
 | `DEFINITION_BUILTIN_EXCEPTION_OVERRIDE` | VALIDATION | 400/422 | non | RULE |

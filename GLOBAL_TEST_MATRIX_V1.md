@@ -19,7 +19,7 @@ Elle ne contient **aucun seuil de performance chiffré** : ils seront fixés au 
 | L0 | Statique / CI | architecture, contrat ↔ schéma, registres, portes de couverture | 13 |
 | L1 | Domain pur | fonctions pures sans base : Rule Engine, modèles, calcul de créneau | 22 |
 | L2 | PostgreSQL | contraintes, triggers, index, rôles, partitions | 29 |
-| L3 | Cas d’usage intégré | un cas d’usage avec base et outbox, dans une transaction | 51 |
+| L3 | Cas d’usage intégré | un cas d’usage avec base et outbox, dans une transaction | 52 |
 | L4 | Flux entre moteurs | événement → handler → moteur → événement | 46 |
 | L5 | Scénario de bout en bout | horloge virtuelle, plusieurs jours simulés, tous les vérificateurs | 30 |
 | L6 | Propriétés, différentiel, chaos | génération aléatoire, comparaison à une version naïve, injection de fautes | 18 |
@@ -259,6 +259,7 @@ Le modèle de référence (`reference_model/`) est l’oracle ; l’implémentat
 | SE-10 | L3 | Erreurs de facture, client, organisation, promesse et suspension. | O2 | ERR ×26 |
 | SE-11 | L3 | Erreurs de lot d’import. | O2 | ERR ×7 |
 | SE-12 | L0 | Porte de couverture des erreurs : **chaque code de l’Annexe A** est produit par au moins un test qui vérifie sa classe HTTP et son indicateur de nouvelle tentative ; le registre est généré et vérifié en CI. | O5 | **ERR:\*** |
+| SE-13 | L3 | Course de création dédupliquée (R-12) : violation de la contrainte **déclarée** → `REPLAY` de l’objet occupant relu dans l’unité de reprise ; occupant sorti de l’index avant la relecture → `DEDUP_REPLAY_UNAVAILABLE` (`CONFLICT`, retryable), rien d’écrit, clé de requête non consommée, Domain non rappelé ; autre contrainte : non traduite (R12-B, B11). | O6 | TD:19 · ERR:DEDUP_REPLAY_UNAVAILABLE |
 
 ### I. Jobs planifiés et temps
 
@@ -446,7 +447,7 @@ Univers extrait des documents figés par `universe.py`. « Explicite » : le jet
 | `AUT` | décisions et principes de l’Automation Engine | 20 | 20 | 0 | 0 |
 | `ENG` | décisions, contrats, invariants, règles de dépendance | 55 | 54 | 0 | 0 |
 | `JOB` | jobs planifiés | 17 | 17 | 0 | 0 |
-| `ERR` | codes d’erreur | 109 | 103 | 6 | 0 |
+| `ERR` | codes d’erreur | 110 | 104 | 6 | 0 |
 | `RPC` | décisions, principes, règles de conservation | 37 | 37 | 0 | 0 |
 | `GOLD` | cas d’or chiffrés | 36 | 36 | 0 | 0 |
 | `RCN` | décisions de Collection V1.2 (rapprochement) | 12 | 12 | 0 | 0 |
@@ -454,9 +455,9 @@ Univers extrait des documents figés par `universe.py`. « Explicite » : le jet
 | `TI` |  | 22 | 22 | 0 | 0 |
 | `AR` |  | 20 | 20 | 0 | 0 |
 | `EVT` | types d’événement | 77 | 77 | 0 | 0 |
-| **Total** | | **732** | **725** | **6** | **0** |
+| **Total** | | **733** | **726** | **6** | **0** |
 
-**Tests définis : 215.** Identifiants dupliqués : 0. Jetons inconnus : 0.
+**Tests définis : 216.** Identifiants dupliqués : 0. Jetons inconnus : 0.
 
 **Éléments exemptés** (non testables, justifiés) : `ENG:P5` — décision d’ordre des passes de conception (Risk / Priority / Cashflow avant la matrice) : non testable.
 
@@ -485,7 +486,7 @@ Univers extrait des documents figés par `universe.py`. « Explicite » : le jet
 - `AUT` (20) : AU1, AU2, AU3, AU4, AU5, AU6, AU7, AU8, AU9, AU10, AU11, AU12, AP1, AP2, AP3, AP4, AP5, AP6, AP7, AP8
 - `ENG` (55) : EC1, EC2, EC3, EC4, EC5, EC6, EC7, EC8, EC9, EC10, P1, P2, P3, P4, P5, EC-01, EC-02, EC-03, EC-04, EC-05, EC-06, EC-07, EC-08, EC-09, EC-10, EC-11, EC-12, EC-13, EC-14, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12, X13, X14, X15, X16, X17, DR1, DR2, DR3, DR4, DR5, DR6, DR7, DR8, DR9
 - `JOB` (17) : OutboxPublisher, InvoiceLifecycleScan, PromiseBreachScan, HoldExpiryScan, ApprovalExpiryScan, TimeTriggerScanner, ExecutionWorker, ExecuteDueActions, Reaper, ImportReleaser, EnrollmentRunner, ProjectionDailyRefresh, ProjectionSafetyNet, ReconciliationWindowScan, CashflowScheduler, PartitionManager, TechnicalPurge
-- `ERR` (109) : voir Annexe C
+- `ERR` (110) : voir Annexe C
 - `RPC` (37) : RP1, RP2, RP3, RP4, RP5, RP6, RP7, RP8, RP9, RP10, RP11, RP12, RP13, RP14, RP15, RP16, RP17, RP18, RP19, RP20, RP21, RP22, RP23, PA, PB, PC, PD, PE, PF, PG, PH, CF1, CF2, CF3, CF4, CF5, CF6
 - `GOLD` (36) : G1, G2, G3, G4, G5, P1, P2, P3, P4, P5, P6, P7, C1, C10, C2, C3, C4, C5, C6, C7, C8, C9, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14
 - `RCN` (12) : RN1, RN2, RN3, RN4, RN5, RN6, RN7, RN8, RN9, RN10, RN11, RN12
@@ -920,7 +921,7 @@ Univers extrait des documents figés par `universe.py`. « Explicite » : le jet
 | `TD:16` | TA-04 |
 | `TD:17` | TA-05, TA-07, TA-12 |
 | `TD:18` | TA-05, TA-06 |
-| `TD:19` | TA-08 |
+| `TD:19` | SE-13, TA-08 |
 | `TD:20` | TA-09 |
 | `TD:21` | TA-11 |
 | `TD:22` | TA-10 |
@@ -1006,6 +1007,6 @@ Univers extrait des documents figés par `universe.py`. « Explicite » : le jet
 
 ## Annexe C · Familles couvertes en partie par une porte
 
-- `ERR` : 109 éléments, **103** couverts explicitement, **6** par la porte seule.
+- `ERR` : 110 éléments, **104** couverts explicitement, **6** par la porte seule.
 - `EVT` : 77 éléments, **77** couverts explicitement, **0** par la porte seule.
 - `TAB` : 41 éléments, **41** couverts explicitement, **0** par la porte seule.

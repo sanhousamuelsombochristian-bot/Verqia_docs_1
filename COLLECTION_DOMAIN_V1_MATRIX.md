@@ -155,7 +155,7 @@ rapport d'amendements séparé pour le détail des vérifications et des anomali
 | Events | `COLLECTION_ACTION_CANCELLED` | EXPLICIT |
 | Audit | requis (commande d'un utilisateur, D3) | EXPLICIT |
 | Errors | aucune déclarée spécifiquement (au-delà des classes génériques) | EXPLICIT |
-| Idempotency / déduplication | garde d'état (rejouer sur une action déjà `CANCELLED` = REPLAY) | EXPLICIT (`outcomes=('OK','REPLAY')`) |
+| Idempotency / déduplication | garde d'état : rejouer la **même** transition (action déjà `CANCELLED`) → **`SKIPPED`** ; transition réellement invalide (depuis `DONE`, `FAILED`, `SUPPRESSED`) → `ACTION_INVALID_TRANSITION` | EXPLICIT — `SKIPPED` : `ENGINE_CONTRACTS_V1.md` §5 (« Transition d'état \| garde d'état en base \| `SKIPPED` ») ; erreur : EC-11. **CORRIGÉ (traçabilité, 2026-10-04)** : la version antérieure disait `REPLAY`, étiqueté EXPLICIT d'après le *vocabulaire* `outcomes=('OK','REPLAY')` ; aucune source gelée ne le porte. Aucun changement métier ; l'issue `SKIPPED` est admise par l'amendement Application B10 |
 | Dependencies | aucune externe | EXPLICIT |
 | Open questions | aucune identifiée | — |
 | Sources | `STATE_MACHINES_V1.md` §8 ; `INVARIANTS_V1.md` §7.1 ; `specs.py` |
@@ -300,7 +300,7 @@ rapport d'amendements séparé pour le détail des vérifications et des anomali
 | Effet dérivé (non automatique) | `outcome = PROMISE_OBTAINED`/`DISPUTE_RAISED` **suggère** à l'interface de créer la promesse/le litige, sans les créer automatiquement | EXPLICIT (§8.2, répété STATE_MACHINES §8) |
 | Audit | `REQUIRED` au niveau Application (régime générique D3, B8/`specs.py`) | EXPLICIT (registre) — **OPEN (AUDIT-01.c)** : aucune mention métier d'un audit dédié au-delà de ce régime générique |
 | Errors | `ACTION_INVALID_TRANSITION`, `INSUFFICIENT_ROLE` | EXPLICIT (EC-11) |
-| Idempotency / déduplication | garde d'état — rejouer sur une action déjà `DONE` = `REPLAY` | EXPLICIT (EC-11) |
+| Idempotency / déduplication | garde d'état : rejouer la **même** transition (tâche déjà `DONE`) → **`SKIPPED`** ; transition réellement invalide (action `CANCELLED`, `FAILED`, `SUPPRESSED`, ou `REMINDER`) → `ACTION_INVALID_TRANSITION` | EXPLICIT — `SKIPPED` : `ENGINE_CONTRACTS_V1.md` §5 ; erreur : EC-11. **CORRIGÉ (traçabilité, 2026-10-04)** : la version antérieure disait « `DONE` = `REPLAY` », étiqueté « EXPLICIT (EC-11) » ; la ligne EC-11 de `CompleteTask` ne dit pas cela (« garde d'état », erreurs `ACTION_INVALID_TRANSITION` · `INSUFFICIENT_ROLE`). Aucun changement métier ; `SKIPPED` admis par B10 |
 | Dependencies | aucune externe ; `collection_action_attempts` **non concerné** (cette table documente les tentatives d'envoi automatique, jamais mentionnée en lien avec `CompleteTask`) | DERIVED |
 | Open questions | **AUDIT-01.c** (audit dédié éventuel) — réserve ouverte, non close par B8 | OPEN |
 | Sources | `ENGINE_CONTRACTS_V1.md` §EC-11 ; `STATE_MACHINES_V1.md` §8 ; `COLLECTION_ENGINE_V1.md` §8.2, §13, §14 ; `DATA_CONTRACT_V1.md` §6.1 ; registre (B8) |
@@ -549,6 +549,18 @@ Chaque entrée : Question → Sources → Arbitrage → Rationale → Impact →
 | OPEN-04 | **ACCEPTÉ** — `ReapActions.emits=()` intentionnel : `EXECUTING → SCHEDULED` ne requiert pas d'événement, `ExecuteDueActions` (polling 1 min) détecte la reprise via `scheduled_for`. Même transition d'état ≠ obligation que tous les chemins d'entrée émettent le même événement. Aucun amendement. | A7 |
 | OPEN-05 | **ACCEPTÉ** — `collection.AuthorizeOverride` vérifie la validité ACTUELLE du grant (fait, G4) ; `rules.Evaluate` reste l'autorité finale qui consomme ce fait (G3). Pas de double source de vérité. Source explicite : `specs.py` d'`AuthorizeOverride`, « audit à la création puis à chaque vérification » = G8 mot pour mot. Aucun changement de `calls` ni de Domain. | A6 |
 | OPEN-06 | **RÉSOLU** — A1/A4 : `EXPLICIT` (liste établie depuis `decision_snapshot`, `DATA_CONTRACT_V1.md` §6.1). A2 : `EXPLICIT` (nouvelle évaluation, `STATE_MACHINES_V1.md` §8 : la revalidation `PROPOSED → SCHEDULED` reprend explicitement l'ordre des 13 exceptions). A6 : `EXPLICIT` (résolu via OPEN-05). Champs jamais consommés par aucune UC : `decision_id`, `evaluated_at`, `as_of` (propre), `org_timezone`, `conditions_trace`, `facts_snapshot`, `proposed_actions[]`, `input_hash`. | A1, A2, A4, A6 |
+
+---
+
+## Journal des corrections de traçabilité
+
+| Date | Ligne | Correction | Nature |
+|---|---|---|---|
+| 2026-10-04 | A5 `CancelCollectionAction`, idempotence | « rejeu = `REPLAY` » (EXPLICIT d'après le vocabulaire des issues) → `SKIPPED` pour la même transition (`ENGINE_CONTRACTS_V1.md` §5), erreur EC-11 pour une transition invalide | traçabilité — aucune règle métier changée ; issue admise par B10 |
+| 2026-10-04 | A11 `CompleteTask`, idempotence | « `DONE` = `REPLAY` » étiqueté « EXPLICIT (EC-11) », qu'EC-11 ne dit pas → même correction | traçabilité — idem |
+
+Relevé non corrigé, hors du périmètre autorisé : la ligne A10 (`ClaimTask`, idempotence) annonce « probablement `REPLAY` » pour une
+réclamation par l'assigné lui-même, alors que DV5-2 a décidé `CONCURRENT_MODIFICATION`.
 
 ---
 

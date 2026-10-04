@@ -97,7 +97,9 @@ def load_catalogue_full():
             continue
         cells = [c.strip() for c in line.strip('|').split('|')]
         prefix = None
-        payload = [(m.group(1), bool(m.group(2)), bool(m.group(3))) for m in re.finditer(r'`(\w+)(\[\])?(\?)?`', cells[2])] if len(cells) > 2 else []
+        # A5 (DV5-1) : une parenthèse ÉNUMÈRE les valeurs d'un champ (« `cause` (`RELEASED`, `EXPIRED`) »), elle n'ajoute pas de champs
+        payload_cell = re.sub(r'\([^)]*\)', '', cells[2]) if len(cells) > 2 else ''
+        payload = [(m.group(1), bool(m.group(2)), bool(m.group(3))) for m in re.finditer(r'`(\w+)(\[\])?(\?)?`', payload_cell)]
         for t in re.findall(r'`(_?[A-Z][A-Z0-9_]+)`', cells[0]):
             name = prefix + t if t.startswith('_') else t
             if not t.startswith('_'):

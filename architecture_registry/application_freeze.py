@@ -67,6 +67,19 @@ AMENDMENTS = [
      "`organizations.OrgSettings` n'était déclarée nulle part pour `collection`. Même espèce d'écart que B5/B6 (lecture réelle du Domain non "
      "déclarée) : `priority` avait gagné `organizations.OrgSettings` en B6 pour `critical_amount_minor`. Aucune règle métier nouvelle, aucune "
      "modification d'un document gelé, aucun changement de machine à états ni de contrat de données", 'oui, 2026-09-29'),
+    ('B10', '2026-10-04', "`CancelCollectionAction` (A5), `CompleteTask` (A11) et `ReleaseHold` (B2) ajoutent `SKIPPED` à leurs issues (`OUTCOME_EXTRAS`) : "
+     "rejouer la MÊME transition (A5 sur `CANCELLED`, A11 sur `DONE`, B2 sur `RELEASED`) est un no-op légitime, tandis qu'une transition "
+     "réellement invalide reste l'erreur d'EC-11 (`ACTION_INVALID_TRANSITION`, `HOLD_NOT_ACTIVE`)",
+     "donnée générée ; DV5-2 bis, relevé en écrivant le Collection Domain : `ENGINE_CONTRACTS_V1.md` §5 (matrice d'idempotence) dit « Transition "
+     "d'état | garde d'état en base | `SKIPPED` », alors que les issues par nature d'un `command` n'admettaient que `OK` et `REPLAY` ; ces trois "
+     "commandes n'ont pas de clé d'idempotence (`idempotency_scope=None`), le coureur ne peut donc pas produire `REPLAY` pour elles. Même "
+     "mécanisme que les issues supplémentaires d'A1/A4. Aucune règle métier nouvelle, aucun document gelé modifié", 'oui, 2026-10-04'),
+    ('B11', '2026-10-04', "`CreateCollectionAction` (A1) et `CreateManualAction` (A4) déclarent l'erreur `DEDUP_REPLAY_UNAVAILABLE` (`CONFLICT`, 409, retryable) : "
+     "la contrainte de déduplication a établi le doublon, mais l'objet nécessaire au `REPLAY` n'est plus récupérable à la lecture de reprise (R12-O1, option B). "
+     "Produite uniquement par le coureur dans l'unité de reprise, jamais par un Domain ; aucune nouvelle tentative automatique : l'appelant retente sur l'état courant",
+     "données générées ; amendement préalable de `ENGINE_CONTRACTS_V1.md` (Annexe A via `test_matrix/gen_errors.py`, EC-11, journal « Amendements après V1.1 », "
+     "R12-B) ; catalogue : 110 codes ; classes d'erreurs d'A1/A4 inchangées (`CONFLICT` déjà déclarée) ; aucune règle métier nouvelle ; Domain, primitives et "
+     "oracle inchangés ; voir `R12_O1_FICHE_B.md`", 'oui, 2026-10-04'),
 ]
 
 

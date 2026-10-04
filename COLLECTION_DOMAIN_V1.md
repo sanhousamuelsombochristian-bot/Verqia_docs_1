@@ -351,6 +351,8 @@ infrastructure, exactement comme `evaluate_risk` et `evaluate_priority`.
 | Réessais d'envoi : 5 min / 30 min / 2 h ; `max_attempts` 3 par défaut | Domain | EXPLICIT (§9) |
 | Placement d'un créneau : fenêtre de communication, jours ouvrés, jours fériés, `send_rate_per_hour` ; tâches humaines et escalades sans fenêtre | `SlotCalculator`, fonction **pure** du Domain, faits calendaires fournis en entrée | EXPLICIT pour les règles (§7) ; DERIVED pour la couche |
 | Replanification : la normalisation s'ancre à `max(cible, as_of)` ; un `scheduled_for` antérieur à la commande est impossible | Domain (A12) | **DÉCISION NORMATIVE** — voir §4, A12, point 4 |
+| Changer de jour (jour non ouvré, plafond client atteint) **conserve l'heure** visée ; sortir de la fenêtre **par le haut** fait aborder le jour ouvré suivant **au début de fenêtre** — y compris un réessai tombé après la fermeture, et une heure visée hors fenêtre | Domain (`SlotCalculator`) | conservation de l'heure : §11 (dimanche 09:00 → lundi 09:00) ; début de fenêtre : **RÈGLE NORMATIVE NOUVELLEMENT DÉCIDÉE — amendement DV5-3** (2026-10-04). Elle n'est **pas** contenue dans les sources : §7 et §11 ne tranchent pas ce cas. Le besoin opérationnel de `PlacementRulesInconsistent` disparaît sous cette règle ; ce nom n'a jamais existé dans un catalogue ni un contrat (exception interne à l'oracle seulement), son déclassement ne touche donc que l'oracle |
+| Les réessais passent par le `SlotCalculator` | Domain | EXPLICIT (§9 : « les réessais respectent la fenêtre de communication » ; §7 point 1 : « ou `retry_at` ») |
 | Un résultat de balayage ne dépend jamais de l'heure d'exécution : « le prochain passage rattrape » | Domain | EXPLICIT |
 
 ## 9. Idempotency and Deduplication
@@ -364,14 +366,34 @@ Trois notions distinctes, jamais interchangeables : **déduplication d'événeme
 | `dedup_key = {invoice_id}:{type}:L{level}:C{cycle}:R{occurrence}`, portée organisation ; `occurrence` **toujours** produite par l'Automation Engine, jamais choisie ici ni acceptée d'un appelant | A1 | EXPLICIT — DV4-4, AM-01 appliqué |
 | `manual:{idempotency_key}` — formule distincte | A4 | EXPLICIT |
 | Garde d'état `PROPOSED` | A2, A3 | EXPLICIT |
-| Garde d'état sur état terminal ⇒ `REPLAY` | A5, A11 | EXPLICIT |
-| Réclamation gardée : une seule gagne ; même acteur déjà assigné ⇒ `REPLAY` ; autre acteur ⇒ `CONCURRENT_MODIFICATION` | A10 | EXPLICIT / DERIVED |
+| Un second appel sans mécanisme de rejeu applicable (pas de clé d'idempotence) est **évalué contre l'état courant** et doit satisfaire les gardes de la commande ; si la transition n'est plus valide, la garde contractuelle s'applique. Cas par cas ci-dessous | A5, A10, A11, A12, B2 | **DÉCISION DV5-2** (2026-10-04) |
+| A5 `CancelCollectionAction` : sur une action déjà `CANCELLED` (même transition rejouée) → **`SKIPPED`** ; sur `DONE`, `FAILED`, `SUPPRESSED` (transition réellement invalide) → `ACTION_INVALID_TRANSITION` | A5 | **DV5-2 bis** (B10) |
+| A10 `ClaimTask` sur une tâche déjà assignée, y compris par son propre assigné : `CONCURRENT_MODIFICATION` (garde `assigned_to IS NULL`) | A10 | DV5-2 |
+| A11 `CompleteTask` : sur une tâche déjà `DONE` → **`SKIPPED`** ; sur une action `CANCELLED`, `FAILED`, `SUPPRESSED`, ou sur un `REMINDER` → `ACTION_INVALID_TRANSITION` | A11 | **DV5-2 bis** (B10) |
+| A12 `RescheduleAction` rejoué : l'action est toujours `PROPOSED`/`SCHEDULED`, la garde est **satisfaite** ; le même créneau est réécrit. Aucun refus | A12 | DV5-2 |
+| B2 `ReleaseHold` : sur un hold déjà `RELEASED` → **`SKIPPED`** ; sur un hold `EXPIRED` → `HOLD_NOT_ACTIVE` | B2 | **DV5-2 bis** (B10) |
 | Garde d'état `PROPOSED`/`SCHEDULED` | A12 | EXPLICIT |
 | Claim gardé + revalidation | A6 | EXPLICIT |
 | Transition gardée (balayage) | A7, B3 | EXPLICIT |
 | Clé d'idempotence de commande + contrainte d'exclusion de chevauchement | B1 | EXPLICIT |
 | Garde d'état `ACTIVE` | B2 | EXPLICIT |
 | Reçu par `(event_id, handler_name)` | A8, A9, C1-C7 | EXPLICIT |
+
+**Correction DV5-2 (2026-10-04).** La version du 2026-09-29 de ce tableau annonçait « garde d'état sur état terminal ⇒
+`REPLAY` » pour A5 et A11, étiqueté **EXPLICIT**. C'était une dérivation tirée du *vocabulaire* des issues d'un `command`
+(`outcomes=('OK','REPLAY')`), présentée comme une règle. Or `REPLAY` appartient au coureur (P4 ; mutation
+`M-AP12-replay-proposable-by-the-domain`), qui ne le produit que sur une clé d'idempotence déjà vue — et A5, A10, A11, A12,
+B2 ont `idempotency_scope=None` : ni le Domain ni le coureur ne peuvent le produire pour eux. Le second appel est donc
+évalué contre l'état courant : refusé par la garde contractuelle quand la transition n'est plus valide (A5, A10, A11, B2),
+accepté quand elle l'est encore (A12). Cette décision ne couvre **pas** le `REPLAY` de création sur `dedup_key` (A1, A4) :
+c'est un mécanisme distinct (R-12).
+
+**Correction DV5-2 bis (2026-10-04, B10).** La première version de DV5-2 refusait tout rejeu par une erreur. Elle avait été
+recommandée sans voir `ENGINE_CONTRACTS_V1.md` §5 (« Transition d'état | garde d'état en base | `SKIPPED` »). Les deux sources
+gelées se lisent ensemble : rejouer la **même** transition donne `SKIPPED` (§5) ; tenter une transition **réellement invalide**
+donne l'erreur que liste EC-11. `SKIPPED` a été ajouté aux issues de A5, A11 et B2 dans le contrat Application (amendement B10).
+La source de l'ancienne affirmation « `DONE` → `REPLAY` » était la matrice (ligne A11, « EXPLICIT (EC-11) ») : aucune source
+gelée ne la porte. **Correction de la matrice à autoriser** (§19, règle 2 : elle ne se modifie pas sans décision).
 
 **Libération de clé** : `CANCELLED` et `SUPPRESSED` libèrent la `dedup_key` ; `FAILED` la conserve. Un échec
 définitif ne peut donc pas être recréé silencieusement sous la même clé ; une suppression, si.
@@ -558,7 +580,7 @@ OPEN-03, OPEN-04, OPEN-05, OPEN-06. Détail et rationale : `COLLECTION_DOMAIN_V1
 
 ## 17. Open Issues and Reserves
 
-Aucune n'est fermée par hypothèse. **Aucune bloquante ne subsiste** ; dix réserves non bloquantes restent ouvertes.
+Aucune n'est fermée par hypothèse. **Aucune bloquante ne subsiste** ; quatorze réserves non bloquantes restent ouvertes (dont DV5-4, R-11 et R-12, ajoutées le 2026-10-04 en écrivant les primitives du Domain).
 
 ### Bloquants — tous deux fermés le 2026-09-29
 
@@ -582,6 +604,9 @@ Aucune n'est fermée par hypothèse. **Aucune bloquante ne subsiste** ; dix rés
 | R-8 | `customers.ContactDirectory` déclaré dans les lectures de module de `collection` sans consommateur — la résolution du contact appartient à `notifications`, qui déclare déjà cette lecture | — | **NON-CRITICAL GAP** (hygiène de registre) ; **AMENDMENT CANDIDATE** |
 | R-9 | Effet éventuel, dans la transaction qui lève une cause, côté action | B2 | **DERIVED, réserve résiduelle** ; §11 suggère « aucun » sans l'énoncer |
 | R-10 | Clé d'idempotence envoyée au fournisseur, bornant le doublon de la fenêtre « accepté / non validé » | A6 | renvoyé explicitement à la passe Intégrations (§8.3) |
+| **DV5-4** | Ce qui rend une action manuelle « motivée », donc exemptée de la non-régression (`DATA_CONTRACT_V1.md` §6.1) : `CreateManualAction` ne porte aucun champ de motif | A4 | **OPEN, traitement strict décidé le 2026-10-04** : aucune exemption tant que le motif n'est pas défini ; une régression manuelle est refusée (`ACTION_LEVEL_REGRESSION`). À fermer par amendement |
+| R-11 | Provenance de l'instant d'entrée en `EXECUTING` : aucune colonne ne le porte (§6.1) | A7 | le Domain le **reçoit** comme fait ; son assemblage est une question d'Application |
+| R-12 | `REPLAY` de **création** sur `dedup_key` déjà occupée (C11, EXPLICIT dans les Invariants) : le Domain ne peut pas le proposer, et la clé d'idempotence de requête n'est pas la `dedup_key` | A1, A4 | **DÉCIDÉ (2026-10-04) : A + C ; implémentation à faire.** Les Engine Contracts disent trois fois « `dedup_key` → `REPLAY` » (§0.3, §5, EC-11) ; le contrat Application réserve `REPLAY` au coureur. Retenu : (A) l'Application cherche la `dedup_key` avant d'appeler le Domain, et le coureur répond `REPLAY` avec l'action existante ; (C) la violation de l'index unique partiel, seul garde sûr face à la concurrence, est traduite en `REPLAY`. Le Domain reste pur et ne propose jamais `REPLAY`. Amendement Application et coureur à concevoir ; A1 et A4 restent non construits jusque-là |
 
 **Capability gaps constatés, volontairement non transformés en cas d'usage** : aucune opération de **dé-réclamation**
 d'une tâche (rendre au pool) n'existe dans les sources ; aucune reprise manuelle d'une action `FAILED` n'existe non
@@ -608,7 +633,7 @@ plus. Classés **NON-CRITICAL GAP**. Créer un 23ᵉ cas d'usage pour l'un ou l'
 **Les 22 cas d'usage sont implémentables.** Aucun n'attend plus une décision ou un amendement.
 
 **Ce que « frozen » signifie ici** : le modèle, ses frontières, ses transitions, son idempotence, ses événements,
-ses erreurs et ses règles temporelles ne changent plus sans passer par §19. Les dix réserves de §17 sont des points
+ses erreurs et ses règles temporelles ne changent plus sans passer par §19. Les quatorze réserves de §17 sont des points
 d'extension ou de confirmation, aucune n'empêche d'écrire le code d'un cas d'usage.
 
 **Ce que « frozen » ne signifie pas** : ni que le Domain a été implémenté, ni que ses tests de domaine existent. La
@@ -618,7 +643,7 @@ suit la même séquence que Risk et Priority, et n'a pas commencé.
 ## 19. Versioning and Amendment Policy
 
 **Statut de ce document : Collection Domain V3 — READY FOR IMPLEMENTATION / ARCHITECTURALLY FROZEN (2026-09-29).**
-Aucun bloquant ne subsiste. Dix réserves non bloquantes restent explicitement ouvertes (§17) : elles n'empêchent
+Aucun bloquant ne subsiste. Quatorze réserves non bloquantes restent explicitement ouvertes (§17) : elles n'empêchent
 aucun cas d'usage d'être codé, et aucune n'est fermée par hypothèse.
 
 Règles de gouvernance, héritées de la méthode appliquée aux tranches déjà gelées :
@@ -640,6 +665,12 @@ Règles de gouvernance, héritées de la méthode appliquée aux tranches déjà
    | 2026-09-26 | B8 — enregistrement d'A10, A11, A12, absents du registre (AUDIT-01) | amendement de registre |
    | 2026-09-29 | **BLOCKER-1** — ancrage `max(cible, as_of)` de la replanification (A12) | **décision normative** |
    | 2026-09-29 | **B9** — déclaration de `CalendarReader` et `OrgSettings` pour A2 et A12 | **amendement de registre** |
+   | 2026-10-04 | **DV5-1 / A5** — le générateur lisait l'énumération entre parenthèses de `cause` comme deux champs : `CollectionHoldReleased(scope, cause)` | **amendement d'outil** (journal du registre) |
+   | 2026-10-04 | **DV5-2** — rejeu d'une commande sans clé sur un état atteint : refusé par la garde, jamais `REPLAY` ; correction du §9 | **décision + correction** |
+   | 2026-10-04 | **DV5-3** — sortie de fenêtre par le haut : jour ouvré suivant au début de fenêtre | **décision normative** |
+   | 2026-10-04 | **DV5-4** — non-régression appliquée strictement aux actions manuelles tant que « motivée » n'est pas défini | **décision provisoire**, OPEN |
+   | 2026-10-04 | **DV5-2 bis / B10** — rejouer la même transition (A5, A11, B2) donne `SKIPPED` (EC §5) ; `SKIPPED` ajouté à leurs issues | **décision + amendement Application** |
+   | 2026-10-04 | **R-12** — `REPLAY` de création sur `dedup_key` : pré-contrôle par l'Application + traduction de la violation d'index (A + C) | **décision d'architecture**, implémentation à faire |
 
 7. **Amendements candidats restants, non requis** : R-7 (trois codes d'erreur du catalogue des invariants sans cas
    d'usage déclaré) et R-8 (`customers.ContactDirectory` déclaré dans les lectures de module de `collection` sans

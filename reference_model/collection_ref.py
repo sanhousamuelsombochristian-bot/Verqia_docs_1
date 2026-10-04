@@ -88,7 +88,13 @@ ERROR_CLASSES = ('TRANSIENT', 'PERMANENT', 'CONFIGURATION', 'BUSINESS')
 
 @dataclass(frozen=True)
 class ReferenceAction:
-    """État observable d'une action. Champs strictement issus de `DATA_CONTRACT_V1.md` §6.1."""
+    """État observable d'une action, plus les FAITS qu'un oracle doit porter pour décider.
+
+    [FAIT] Ne sont PAS des colonnes de `collection_actions` (`DATA_CONTRACT_V1.md` §6.1) : `cycle` et `occurrence` (la
+    `dedup_key` est un texte opaque), `attempts` (lignes de `collection_action_attempts`, §6.2), `executing_since` et
+    `automation_id` (atteint par `automation_execution_id`). L'oracle les garde ici parce qu'il modélise un monde ; le
+    Domain réel les reçoit comme faits assemblés par l'Application.
+    """
     action_id: str
     invoice_id: str
     customer_id: str
@@ -96,7 +102,9 @@ class ReferenceAction:
     level: int
     origin: str = 'AUTOMATION'                 # AUTOMATION | MANUAL
     cycle: int = 0
-    occurrence: int = 0
+    occurrence: str = '0.0'                    # [FAIT] chaîne opaque « {n}.{k} », défaut "0.0" (AUTOMATION_ENGINE §3)
+    max_attempts: int = 3                      # [FAIT] colonne PAR LIGNE, 1 à 10, défaut 3 (DATA_CONTRACT §6.1)
+    automation_id: str | None = None           # [FAIT] automatisation d'origine ; None pour une action manuelle
     status: str = 'PROPOSED'
     scheduled_for: datetime | None = None
     assigned_to: str | None = None
@@ -152,33 +160,20 @@ class ReferenceOrgRules:
     """Règles de placement : catégorie C (réglages d'organisation) et B (stratégie), §3.1bis, §7."""
     comm_window_start: time = time(8, 0)                # C, `org_settings.comm_window_start`
     comm_window_end: time = time(18, 0)                 # C, `org_settings.comm_window_end`
-    business_weekdays: tuple = (0, 1, 2, 3, 4)          # C, lundi-vendredi par défaut (§11)
+    business_weekdays: tuple = (1, 2, 3, 4, 5)          # C, [FAIT] ISO 1-7 comme `org_settings.business_days`
     holidays: frozenset = frozenset()                   # C, `org_holidays`
     send_hour: time = time(9, 0)                        # B, « heure d'envoi visée (09:00) », §3.3
     max_customer_messages_per_day: int = 2              # C, `extra.max_customer_messages_per_day`
     send_rate_per_hour: int = 200                       # C, `extra.send_rate_per_hour`
 
     def is_business_day(self, d):
-        return d.weekday() in self.business_weekdays and d not in self.holidays
-
-    def send_hour_inside_window(self):
-        return self.comm_window_start <= self.send_hour < self.comm_window_end
+        return d.isoweekday() in self.business_weekdays and d not in self.holidays       # [FAIT] ISO
 
 
-class PlacementRulesInconsistent(Exception):
-    """CONSTAT sur la spécification gelée (relevé par cet oracle, non tranché) — voir `notes.md` / §17.
-
-    `heure d'envoi visée` est un paramètre de **catégorie B** (par version de définition d'automatisation, §3.1bis)
-    tandis que la `fenêtre de communication` est de **catégorie C** (par organisation) — et §3.1bis justifie
-    précisément la catégorie C par le fait qu'une définition ne peut pas connaître les réglages de chaque
-    organisation. Les deux peuvent donc se contredire. Or si l'heure visée tombe HORS de la fenêtre, les règles du
-    §7 lues littéralement ne terminent pas : chaque jour est abordé à l'heure visée, hors fenêtre, donc débordé
-    vers le jour suivant, indéfiniment. Aucune source consultée ne contraint l'heure visée à tomber dans la
-    fenêtre, et aucune règle de validation de définition ne le vérifie (`RULE_ENGINE_V1.md` §5).
-
-    L'oracle REFUSE donc cette configuration explicitement plutôt que de choisir une règle de repli (écrêtage sur
-    le début de fenêtre ? sur la fin ? refus de la définition ?) qu'aucune source n'énonce.
-    """
+# [DV5-3] `PlacementRulesInconsistent` est DÉCLASSÉE (2026-10-04). Cette exception n'a jamais figuré dans un catalogue ni un
+# contrat : c'était un artefact de cet oracle, qui abordait le jour suivant à l'heure visée — et ne terminait donc pas quand
+# celle-ci tombait hors de la fenêtre. Sous la règle DV5-3 (sortie par le haut ⇒ jour ouvré suivant au début de fenêtre),
+# le placement termine toujours et le besoin opérationnel de l'exception disparaît.
 
 
 @dataclass(frozen=True)
@@ -212,7 +207,7 @@ def dedup_key(invoice_id, type_, level, cycle, occurrence):
 
     `occurrence` est TOUJOURS fournie (produite par l'Automation Engine) : ce module ne la choisit jamais (C4).
     """
-    return '%s:%s:L%d:C%d:R%d' % (invoice_id, type_, level, cycle, occurrence)
+    return '%s:%s:L%d:C%d:R%s' % (invoice_id, type_, level, cycle, occurrence)      # [FAIT] occurrence = chaîne
 
 
 def manual_dedup_key(idempotency_key):
@@ -249,123 +244,100 @@ def highest_reached_level(actions, invoice_id, cycle):
 
 # --------------------------------------------------------------------------- §7 : SlotCalculator, transcription A
 
+# Règle de placement après DV5-3 (2026-10-04), identique dans les deux transcriptions :
+#   * sortir de la fenêtre PAR LE HAUT ⇒ jour ouvré suivant, au DÉBUT DE FENÊTRE (DV5-3) — traité AVANT le saut des
+#     jours non ouvrés, sans quoi un samedi 19:00 deviendrait mardi 08:00 au lieu de lundi 08:00 ;
+#   * jour non ouvré ⇒ jour suivant, MÊME HEURE (§11 : dimanche 09:00 → lundi 09:00) ;
+#   * avant la fenêtre ⇒ début de fenêtre, même jour (§7 point 2) ;
+#   * plafond client atteint le jour visé ⇒ jour suivant, même heure (§7 point 3) ;
+#   * débit horaire atteint à l'heure visée ⇒ une heure plus tard (§7 point 4) ;
+#   * tâche humaine / escalade ⇒ ni fenêtre, ni plafond, ni lissage ; jour ouvré, heure conservée (§7 point 5).
+# Les deux faits de saturation décrivent UN instant (jour et heure visés) et cessent de s'appliquer dès qu'on le quitte.
+
 def next_slot_a(as_of, target, rules, client_facing, task_due_date=None,
                 messages_that_day=0, sends_that_hour=0):
-    """Transcription A de `prochain_créneau(as_of, heure_visée, règles)` — §7 points 1 à 5.
-
-    Formulation ITÉRATIVE : on part de l'instant visé et on avance jusqu'à satisfaire chaque règle, dans l'ordre
-    du document. `client_facing` distingue le point 2 (fenêtre, plafond, lissage) du point 5 (tâche humaine).
-    """
+    """Transcription A : formulation ITÉRATIVE sur un couple (jour, heure), corrigé règle après règle."""
+    day = task_due_date if (not client_facing and task_due_date is not None) else target.date()
+    clock = target.time()
     if not client_facing:
-        # 5. Tâches humaines et escalades : pas de fenêtre ; `scheduled_for` = échéance de la tâche ; jour ouvré
-        #    conservé par défaut.
-        d = task_due_date if task_due_date is not None else target.date()
-        while not rules.is_business_day(d):
-            d += timedelta(days=1)
-        return datetime.combine(d, target.timetz().replace(tzinfo=None) if target else rules.send_hour)
+        while not rules.is_business_day(day):
+            day += timedelta(days=1)
+        return datetime.combine(day, clock)
 
-    if not rules.send_hour_inside_window():
-        raise PlacementRulesInconsistent(
-            'heure d\'envoi visée %s hors de la fenêtre %s-%s : §7 ne termine pas'
-            % (rules.send_hour, rules.comm_window_start, rules.comm_window_end))
-
-    # Portée des deux faits de saturation : ils décrivent UN instant précis (le jour de la cible, l'heure de la
-    # cible) et rien d'autre. Un scalaire ne dit rien d'un autre jour ni d'une autre heure : dès que le candidat
-    # quitte cet instant, le fait cesse de s'appliquer. C'est une décision de MODÉLISATION de cette référence,
-    # nécessaire parce que §7 ne décrit pas la portée de ces compteurs ; elle est identique dans les deux
-    # transcriptions, sans quoi leur égalité ne voudrait rien dire.
     saturated_day = target.date() if messages_that_day >= rules.max_customer_messages_per_day else None
-    throttled_hour = target.hour if sends_that_hour >= rules.send_rate_per_hour else None
-
-    # 1. Partir de l'instant visé.
-    at = target
-    for _ in range(400):                                  # borne de sûreté : jamais atteinte sur des règles saines
-        # 2a. avancer jusqu'à un jour ouvré
-        if not rules.is_business_day(at.date()):
-            at = datetime.combine(at.date() + timedelta(days=1), rules.send_hour)
+    throttled = (target.date(), target.hour) if sends_that_hour >= rules.send_rate_per_hour else None
+    for _ in range(1000):
+        if clock >= rules.comm_window_end:
+            day, clock = day + timedelta(days=1), rules.comm_window_start
             continue
-        # 2b. puis jusqu'à l'intérieur de la fenêtre de communication
-        if at.time() < rules.comm_window_start:
-            at = datetime.combine(at.date(), rules.comm_window_start)
+        if not rules.is_business_day(day):
+            day += timedelta(days=1)
             continue
-        if at.time() >= rules.comm_window_end:
-            at = datetime.combine(at.date() + timedelta(days=1), rules.send_hour)
+        if clock < rules.comm_window_start:
+            clock = rules.comm_window_start
             continue
-        # 3. plafond par client : ce jour-là est saturé -> jour ouvré suivant
-        if at.date() == saturated_day:
-            at = datetime.combine(at.date() + timedelta(days=1), rules.send_hour)
+        if day == saturated_day:
+            day += timedelta(days=1)
             continue
-        # 4. lissage : débit horaire dépassé -> décaler d'une heure ; si ce décalage sort de la journée ou de la
-        #    fenêtre, on aborde le jour suivant à SON heure d'envoi visée (§7 point 1, « heure d'envoi visée du
-        #    jour »), jamais en poursuivant depuis l'instant décalé — c'est ce que §11 exhibe (débordement du
-        #    dimanche vers lundi 09:00, l'heure visée, et non 08:00, le début de fenêtre).
-        if at.date() == target.date() and at.hour == throttled_hour:
-            shifted = at + timedelta(hours=1)
-            if shifted.date() != at.date() or shifted.time() >= rules.comm_window_end:
-                at = datetime.combine(at.date() + timedelta(days=1), rules.send_hour)
+        if (day, clock.hour) == throttled:
+            shifted = datetime.combine(day, clock) + timedelta(hours=1)
+            if shifted.date() != day:
+                day, clock = day + timedelta(days=1), rules.comm_window_start
             else:
-                at = shifted
+                clock = shifted.time()
             continue
-        return at
-    raise AssertionError('règles de placement non convergentes')
+        return datetime.combine(day, clock)
+    raise AssertionError('calendrier sans jour ouvré')
 
 
 # --------------------------------------------------------------------------- §7 : SlotCalculator, transcription B
 
 def next_slot_b(as_of, target, rules, client_facing, task_due_date=None,
                 messages_that_day=0, sends_that_hour=0):
-    """Transcription B, INDÉPENDANTE de A : énumération de créneaux candidats puis premier acceptable.
-
-    Même source (§7), formulation différente : A avance par corrections successives, B génère les candidats
-    (jour ouvré, heure dans la fenêtre) et retient le premier qui satisfait tous les prédicats. Leur égalité sur
-    les cas de référence est ce qui atteste la transcription (voir `test_collection_ref.py`).
-    """
+    """Transcription B, INDÉPENDANTE de A : on construit la SUITE des instants candidats, jour par jour, puis on retient le
+    premier qui satisfait tous les prédicats. A corrige un état ; B énumère et filtre."""
     if not client_facing:
         base = task_due_date if task_due_date is not None else target.date()
-        day = next(d for d in _days_from(base) if rules.is_business_day(d))
-        hour = target.timetz().replace(tzinfo=None) if target else rules.send_hour
-        return datetime.combine(day, hour)
-
-    if not rules.send_hour_inside_window():
-        raise PlacementRulesInconsistent(
-            'heure d\'envoi visée %s hors de la fenêtre %s-%s : §7 ne termine pas'
-            % (rules.send_hour, rules.comm_window_start, rules.comm_window_end))
+        return datetime.combine(next(d for d in _days_from(base) if rules.is_business_day(d)), target.time())
 
     saturated_day = target.date() if messages_that_day >= rules.max_customer_messages_per_day else None
-    throttled_hour = target.hour if sends_that_hour >= rules.send_rate_per_hour else None
-
-    for day in _days_from(target.date()):
-        if not rules.is_business_day(day):              # 2a. jour ouvré
+    throttled = (target.date(), target.hour) if sends_that_hour >= rules.send_rate_per_hour else None
+    for at in _candidates(target, rules, saturated_day):
+        if (at.date(), at.hour) == throttled:
             continue
-        if day == saturated_day:                        # 3. plafond par client : ce jour est saturé
-            continue
-        for at in _candidates_of_day(day, rules, target):
-            if day == target.date() and at.hour == throttled_hour:
-                continue                                # 4. lissage : décalage d'une heure = candidat suivant
-            return at
-    raise AssertionError('règles de placement non convergentes')
+        return at
+    raise AssertionError('calendrier sans jour ouvré')
 
 
 def _days_from(d):
-    for k in range(400):
+    for k in range(1000):
         yield d + timedelta(days=k)
 
 
-def _candidates_of_day(day, rules, target):
-    """Instants candidats d'un jour ouvré, du plus tôt au plus tard, par pas d'une heure (§7 points 1, 2, 4).
+def _candidates(target, rules, saturated_day=None):
+    """Suite ordonnée des instants admissibles (jour ouvré, dans la fenêtre), à partir de la cible.
 
-    Ancrage du jour : le jour de l'instant visé démarre à cet instant même, ramené à l'intérieur de la fenêtre
-    (§7 point 2, « avancer jusqu'à l'intérieur de la fenêtre ») ; un jour de débordement démarre à l'heure d'envoi
-    visée DE CE JOUR (§7 point 1, « heure d'envoi visée du jour »), elle aussi ramenée dans la fenêtre. Aucun
-    candidat n'est jamais antérieur à l'instant visé : les opérateurs du §7 avancent, ils ne reculent pas.
+    Chaque jour ouvré offre une « heure d'entrée », puis les heures suivantes de pas d'une heure jusqu'à la fermeture.
+      * jour de la cible : la cible elle-même, ramenée au début de fenêtre si elle le précède ;
+      * jours suivants : l'heure de la cible si l'on n'a quitté les jours précédents que par SAUT (jour non ouvré, plafond),
+        et que cette heure est dans la fenêtre ou la précède (ramenée au début) ; le début de fenêtre dès qu'un jour a été
+        quitté PAR LE HAUT (fermeture atteinte, DV5-3).
     """
-    lo = datetime.combine(day, rules.comm_window_start)
-    hi = datetime.combine(day, rules.comm_window_end)
-    anchor = target if day == target.date() else datetime.combine(day, rules.send_hour)
-    at = max(anchor, lo, target)
-    while at < hi:
-        yield at
-        at = at + timedelta(hours=1)                    # « décaler d'une heure », sans arrondi
+    left_through_top = target.time() >= rules.comm_window_end
+    first = True
+    for day in _days_from(target.date() + timedelta(days=1) if left_through_top else target.date()):
+        entry = rules.comm_window_start if left_through_top else max(target.time(), rules.comm_window_start)
+        if not rules.is_business_day(day) or day == saturated_day:
+            first = False if day == target.date() else first
+            continue                                            # SAUT (jour non ouvré, plafond) : l'heure d'entrée est conservée
+        at = datetime.combine(day, entry)
+        while at.date() == day and at.time() < rules.comm_window_end:
+            yield at
+            at = at + timedelta(hours=1)
+        if first and day == target.date():
+            # quitter le jour de la cible, c'est l'avoir épuisé : le jour suivant s'aborde par le haut
+            left_through_top = True
+        first = False
 
 
 def anchored_target(target, as_of):
@@ -418,9 +390,13 @@ def create_collection_action(actions, command, decision, facts, as_of, rules, ma
 
     reached = highest_reached_level(actions, command['invoice_id'], command['cycle'])
     if reached is not None and command['level'] < reached:
-        # Non-régression R9 : refus. Le catalogue `INVARIANTS_V1.md` §7.1 nomme `ACTION_LEVEL_REGRESSION`, mais
-        # aucun cas d'usage ne le déclare dans le registre : réserve R-7, non comblée ici.
-        return _decision(uc, 'REFUSED', refusal=None, dedup_key=key, audit=manual,
+        # Non-régression (DATA_CONTRACT §6.1). [DV5-4] « sauf action manuelle motivée » : « motivée » n'est pas défini,
+        # donc aucune exemption pour l'instant ; une régression MANUELLE est refusée par `ACTION_LEVEL_REGRESSION`.
+        # Une régression AUTOMATIQUE reste sans code rattaché : réserve R-7, non comblée ici.
+        if manual:
+            return _decision(uc, 'REFUSED', refusal='ACTION_LEVEL_REGRESSION', dedup_key=key, audit=True,
+                             reserves=('DV5-4 : exemption « manuelle motivée » non appliquée tant que le motif n\'est pas défini',))
+        return _decision(uc, 'REFUSED', refusal=None, dedup_key=key, audit=False,
                          reserves=('R-7 : régression de niveau refusée, code d\'erreur non rattaché dans le registre',))
 
     if decision.outcome == 'SUPPRESS':
@@ -495,9 +471,12 @@ def resume_proposed_actions(actions, decisions, facts, as_of, rules):
 def cancel_collection_action(action, reason, as_of):
     """A5 `CancelCollectionAction` — `STATE_MACHINES_V1.md` §8 : tout état NON TERMINAL -> `CANCELLED`, motif."""
     uc = 'CancelCollectionAction'
+    if action.status == 'CANCELLED':
+        # [DV5-2 bis, B10] rejouer la MÊME transition : no-op légitime (ENGINE_CONTRACTS §5 : « Transition d'état → SKIPPED »)
+        return _decision(uc, 'SKIPPED', audit=True)
     if action.is_terminal():
-        return _decision(uc, 'REPLAY' if action.status == 'CANCELLED' else 'REFUSED',
-                         refusal=None if action.status == 'CANCELLED' else 'ACTION_INVALID_TRANSITION', audit=True)
+        # transition réellement invalide (depuis un AUTRE état terminal) : erreur d'EC-11
+        return _decision(uc, 'REFUSED', refusal='ACTION_INVALID_TRANSITION', audit=True)
     if not reason:
         return _decision(uc, 'REFUSED', refusal=None, audit=True,
                          reserves=('motif obligatoire (`STATE_MACHINES_V1.md` §8) sans code d\'erreur nommé',))
@@ -519,7 +498,7 @@ def execute_due_action(action, decision, facts, as_of, rules):
         return _decision(uc, 'SKIPPED')
     if action.scheduled_for is not None and action.scheduled_for > as_of:
         return _decision(uc, 'SKIPPED')
-    if action.attempts >= MAX_ATTEMPTS:
+    if action.attempts >= action.max_attempts:                     # [FAIT] colonne par ligne
         return _decision(uc, 'REFUSED', refusal='ACTION_MAX_ATTEMPTS_REACHED',
                          reserves=('R-7 : `ACTION_MAX_ATTEMPTS_REACHED` au catalogue des invariants, '
                                    'rattaché à aucun cas d\'usage dans le registre',))
@@ -568,11 +547,13 @@ def on_notification_result(action, result, as_of, rules, error_class=None):
         return _decision(uc, 'PROCESSED', transition=('EXECUTING', 'DONE'),
                          events=('COLLECTION_ACTION_EXECUTED',),
                          writes={'status': 'DONE', 'outcome': 'SENT', 'executed_at': as_of})
-    if error_class == 'TRANSIENT' and action.attempts < MAX_ATTEMPTS:
+    if error_class == 'TRANSIENT' and action.attempts < action.max_attempts:          # [FAIT] colonne par ligne
         delay = RETRY_DELAYS[min(action.attempts, len(RETRY_DELAYS)) - 1] if action.attempts else RETRY_DELAYS[0]
+        # [FAIT] §9 : « les réessais respectent la fenêtre de communication » ; §7 point 1 : « ou `retry_at` »
+        retry = next_slot_a(as_of, as_of + delay, rules, action.type in CLIENT_FACING_TYPES)
         return _decision(uc, 'PROCESSED', transition=('EXECUTING', 'SCHEDULED'),
-                         events=('COLLECTION_ACTION_SCHEDULED',), retry_at=as_of + delay,
-                         writes={'status': 'SCHEDULED', 'next_retry_at': as_of + delay,
+                         events=('COLLECTION_ACTION_SCHEDULED',), retry_at=retry,
+                         writes={'status': 'SCHEDULED', 'next_retry_at': retry, 'scheduled_for': retry,
                                  'attempt_closed': ('FAILED', as_of)})
     return _decision(uc, 'PROCESSED', transition=('EXECUTING', 'FAILED'),
                      events=('COLLECTION_ACTION_FAILED',),
@@ -607,10 +588,10 @@ ROLE_ORDER = ('VIEWER', 'COLLECTOR', 'MANAGER', 'ADMIN', 'OWNER')
 
 
 def role_at_least(actor_role, required):
-    """Comparaison de rôles par ordre croissant. `None` requis = aucune exigence de rôle."""
-    if required is None:
-        return True
-    if actor_role is None:
+    """Comparaison de rôles par ordre croissant. [FAIT] Un rôle requis ABSENT n'accorde rien : une tâche assignée nommément,
+    sans pool (`assigned_role` NULL), ne s'ouvre qu'à son assigné (DATA_CONTRACT §6.1 : le pool comprend les utilisateurs
+    de rôle au moins égal — pas de pool, pas de membres)."""
+    if required is None or actor_role is None:
         return False
     try:
         return ROLE_ORDER.index(actor_role) >= ROLE_ORDER.index(required)
@@ -630,9 +611,8 @@ def claim_task(action, actor_id, actor_role, as_of):
         return _decision(uc, 'REFUSED', refusal='ACTION_INVALID_TRANSITION', audit=True)
     if action.status != 'SCHEDULED':
         return _decision(uc, 'REFUSED', refusal='ACTION_INVALID_TRANSITION', audit=True)
-    if action.assigned_to == actor_id:
-        return _decision(uc, 'REPLAY', audit=True)
     if action.assigned_to is not None:
+        # [DV5-2] y compris par son propre assigné : la garde `assigned_to IS NULL` refuse, jamais `REPLAY`
         return _decision(uc, 'REFUSED', refusal='CONCURRENT_MODIFICATION', audit=True)
     if not role_at_least(actor_role, action.assigned_role):
         return _decision(uc, 'REFUSED', refusal='CONCURRENT_MODIFICATION', audit=True,
@@ -650,8 +630,10 @@ def complete_task(action, actor_id, actor_role, outcome, as_of, outcome_note=Non
     """
     uc = 'CompleteTask'
     if not action.is_human_task() or action.status != 'SCHEDULED':
-        return _decision(uc, 'REPLAY' if action.status == 'DONE' else 'REFUSED',
-                         refusal=None if action.status == 'DONE' else 'ACTION_INVALID_TRANSITION', audit=True)
+        if action.is_human_task() and action.status == 'DONE':
+            # [DV5-2 bis, B10] rejouer la MÊME transition `SCHEDULED → DONE` : `SKIPPED` (EC §5), jamais `REPLAY`
+            return _decision(uc, 'SKIPPED', audit=True)
+        return _decision(uc, 'REFUSED', refusal='ACTION_INVALID_TRANSITION', audit=True)
     is_assignee = action.assigned_to is not None and action.assigned_to == actor_id
     if not (is_assignee or role_at_least(actor_role, action.assigned_role)):
         return _decision(uc, 'REFUSED', refusal='INSUFFICIENT_ROLE', audit=True)
@@ -685,8 +667,7 @@ def reschedule_action(action, target, as_of, rules, facts=None, task_due_date=No
     aimed = anchored_target(target, as_of)
     slot = next_slot_a(as_of, aimed, rules, action.type in CLIENT_FACING_TYPES, task_due_date,
                        f.messages_already_that_day, f.sends_already_that_hour)
-    if action.scheduled_for == slot:
-        return _decision(uc, 'REPLAY', audit=True)
+    # [DV5-2] un rejeu trouve l'action toujours PROPOSED/SCHEDULED : la garde est satisfaite, le même créneau est réécrit
     return _decision(uc, 'OK', transition=None, audit=True, writes={'scheduled_for': slot},
                      reserves=('R-4 : aucun événement identifié dans les sources pour la replanification',))
 
@@ -700,7 +681,7 @@ class ReferenceHold:
     invoice_id: str | None = None
     customer_id: str | None = None
     automation_id: str | None = None
-    kind: str = 'MANUAL'
+    kind: str = 'MANUAL_SUSPENSION'               # [FAIT] MANUAL_SUSPENSION | LEGAL | NEGOTIATION (§6.3)
     reason: str = ''
     starts_at: datetime | None = None
     ends_at: datetime | None = None
@@ -710,7 +691,7 @@ class ReferenceHold:
 def _scope_consistent(h):
     """`DATA_CONTRACT_V1.md` §6.3 `CHECK` : portée cohérente avec la cible."""
     if h.scope == 'INVOICE':
-        return h.invoice_id is not None
+        return h.invoice_id is not None and h.customer_id is None          # [FAIT] CK : `customer_id` NULL
     if h.scope == 'CUSTOMER':
         return h.customer_id is not None and h.invoice_id is None
     return h.invoice_id is None and h.customer_id is None
@@ -749,8 +730,10 @@ def release_hold(hold, actor_role, release_reason, as_of):
     uc = 'ReleaseHold'
     if not role_at_least(actor_role, 'MANAGER'):
         return _decision(uc, 'REFUSED', refusal='INSUFFICIENT_ROLE', audit=True)
+    if hold.status == 'RELEASED':
+        return _decision(uc, 'SKIPPED', audit=True)          # [DV5-2 bis, B10] rejouer la même transition (EC §5)
     if hold.status != 'ACTIVE':
-        return _decision(uc, 'REFUSED', refusal='HOLD_NOT_ACTIVE', audit=True)
+        return _decision(uc, 'REFUSED', refusal='HOLD_NOT_ACTIVE', audit=True)   # EXPIRED : transition réellement invalide
     if not release_reason:
         return _decision(uc, 'REFUSED', refusal='HOLD_REASON_REQUIRED', audit=True)
     return _decision(uc, 'OK', transition=('ACTIVE', 'RELEASED'), audit=True,
@@ -780,9 +763,13 @@ def hold_in_force(hold, as_of):
 # --------------------------------------------------------------------------- C1 à C7 : suppressions réactives
 
 def hold_covers(hold, action):
-    """Portée d'un hold appliquée à une action (§12 : « pour la portée du hold »)."""
-    if hold.automation_id is not None:
-        return False if hold.scope == 'ORGANIZATION' else True
+    """Portée d'un hold appliquée à une action (§12 : « pour la portée du hold »).
+
+    [FAIT] `automation_id` NULL = toutes les automatisations (§6.3) ; renseigné, il restreint le hold à l'automatisation d'où
+    vient l'action (DERIVED : le contrat dit ce que NULL signifie). Une action manuelle n'a pas d'automatisation.
+    """
+    if hold.automation_id is not None and action.automation_id != hold.automation_id:
+        return False
     if hold.scope == 'INVOICE':
         return action.invoice_id == hold.invoice_id
     if hold.scope == 'CUSTOMER':
@@ -836,7 +823,7 @@ def suppress_on_event(action, event, payload, facts, as_of, hold=None):
 #: MEDIUM < HIGH) : l'oracle ne les recalcule jamais, il vérifie l'effet de la décision sur Collection.
 GOLDEN_RULES = ReferenceOrgRules(
     comm_window_start=time(8, 0), comm_window_end=time(18, 0),
-    business_weekdays=(0, 1, 2, 3, 4), holidays=frozenset(),
+    business_weekdays=(1, 2, 3, 4, 5), holidays=frozenset(),             # [FAIT] ISO
     send_hour=time(9, 0), max_customer_messages_per_day=2, send_rate_per_hour=200)
 
 GOLDEN_INVOICE = {'invoice_id': 'INV-1', 'customer_id': 'CUS-1', 'total_minor': 500000,

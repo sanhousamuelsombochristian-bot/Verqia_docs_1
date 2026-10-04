@@ -359,10 +359,10 @@ class TestTransactionScope(unittest.TestCase):
 
 
 class TestKernelAmendments(unittest.TestCase):
-    def test_the_application_journal_records_b1_to_b9(self):
+    def test_the_application_journal_records_b1_to_b11(self):
         import application_freeze as FZ
-        self.assertEqual([a[0] for a in FZ.AMENDMENTS], ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9'])
-        self.assertEqual(FZ.read_freeze()['amendments'], 9)
+        self.assertEqual([a[0] for a in FZ.AMENDMENTS], ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11'])
+        self.assertEqual(FZ.read_freeze()['amendments'], 11)
 
     def test_the_kernel_journal_records_k1_and_k2(self):
         import gen_contracts_doc as CD
